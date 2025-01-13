@@ -76,6 +76,7 @@ This section describes how I will create such a system
     1. Create GNUradio flowgraphs to demodulate live
         1. Course frequency correction
         1. Burst detection
+        1. Symbol synchronization 
         1. Depacketization
 1. Bonus: Modify system to transmit arbitary forms of data (not just ASCII)
 
