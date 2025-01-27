@@ -82,3 +82,15 @@ This section describes how I will create such a system
 
 ## Useful Hackrf Commands:
 * ```SoapySDRUtil --probe=driver=hackrf``` - Shows available commands for hackrf
+
+## Useful Links/Articles
+### Frequency Correction
+* Frequency Locked Loop
+  * https://dsp.stackexchange.com/questions/42239/how-does-this-fll-work
+  * [Paper on the Subject](Freq_Locked_Loop-Asilomar_2012_BE_PLL.pdf)
+* Angle-based coarse frequency correction
+   * https://openofdm.readthedocs.io/en/latest/freq_offset.html
+   *
+
+### Phase locked Loop
+    * Tuning loop filter https://dsp.stackexchange.com/questions/64108/designing-a-pi-filter-for-a-costas-loop
