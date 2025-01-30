@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: Not titled yet
+    title: USRP RX
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -149,58 +149,6 @@ blocks:
     coordinate: [736, 460.0]
     rotation: 0
     state: true
-- name: blocks_burst_tagger_0
-  id: blocks_burst_tagger
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    false_key: tx_eob
-    false_value: 'False'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    true_key: tx_sob
-    true_value: 'True'
-    type: complex
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1048, 604.0]
-    rotation: 0
-    state: disabled
-- name: blocks_complex_to_mag_0
-  id: blocks_complex_to_mag
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [672, 832.0]
-    rotation: 0
-    state: disabled
-- name: blocks_complex_to_mag_squared_0
-  id: blocks_complex_to_mag_squared
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [656, 760.0]
-    rotation: 0
-    state: disabled
 - name: blocks_file_sink_0
   id: blocks_file_sink
   parameters:
@@ -216,9 +164,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 484.0]
+    coordinate: [1232, 836.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -231,7 +179,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     offset: '0'
-    repeat: 'False'
+    repeat: 'True'
     type: complex
     vlen: '1'
   states:
@@ -241,39 +189,6 @@ blocks:
     coordinate: [0, 428.0]
     rotation: 0
     state: enabled
-- name: blocks_float_to_complex_0
-  id: blocks_float_to_complex
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 744.0]
-    rotation: 0
-    state: disabled
-- name: blocks_float_to_short_0
-  id: blocks_float_to_short
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    scale: '1'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [864, 684.0]
-    rotation: 0
-    state: disabled
 - name: blocks_freqshift_cc_0
   id: blocks_freqshift_cc
   parameters:
@@ -291,23 +206,6 @@ blocks:
     coordinate: [440, 204.0]
     rotation: 0
     state: true
-- name: blocks_short_to_float_0
-  id: blocks_short_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    scale: '1'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [960, 828.0]
-    rotation: 0
-    state: disabled
 - name: blocks_throttle2_0
   id: blocks_throttle2
   parameters:
@@ -356,30 +254,56 @@ blocks:
     coordinate: [984, 148.0]
     rotation: 0
     state: disabled
-- name: low_pass_filter_0
-  id: low_pass_filter
+- name: epy_block_0
+  id: epy_block
   parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\nfrom gnuradio import filter\nimport pmt\n\nclass blk(gr.sync_block):\
+      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
+      \"Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
+      \ threshold_db=-65, alpha=.00001, burst_tag_name = \"rx_sob\"):  # only default\
+      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
+      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
+      \     name='Burst Detect & Squelch',   # will show up in GRC\n            in_sig=[np.complex64],\n\
+      \            out_sig=[np.complex64]\n        )\n        # if an attribute with\
+      \ the same name as a parameter is found,\n        # a callback is registered\
+      \ (properties work, too).\n        self.threshold = 10**(threshold_db/10)\n\
+      \        self.alpha = alpha\n        self.prev_filt = 0  #Save previous value\
+      \ of the filter\n        self.tag_key = pmt.intern(burst_tag_name)\n       \
+      \ self.burst_occurring = False #Holds state on if we're in a burst or not\n\n\
+      \    def work(self, input_items, output_items):\n        \"\"\"example: multiply\
+      \ with constant\"\"\"\n        input_samp = input_items[0]\n        mag2 = input_samp\
+      \ * np.conj(input_samp)\n        \n        output = np.zeros(len(input_samp),\
+      \ dtype=complex)\n        # Apply Filter\n        for i in range(0, len(mag2)):\n\
+      \            self.prev_filt = self.alpha*mag2[i] + (1-self.alpha)*self.prev_filt\
+      \ \n            \n            if (self.prev_filt >= self.threshold):\n     \
+      \           if (not self.burst_occurring):  #Add tag if we're not in a burst\n\
+      \                    self.add_item_tag(0, self.nitems_written(0) + i, self.tag_key,\
+      \ pmt.PMT_T)\n                    self.burst_occurring = True\n            \
+      \    output[i] = input_samp[i]\n            else:\n                self.burst_occurring\
+      \ = False\n                \n        output_items[0][:] = output\n        return\
+      \ len(output_items[0])\n"
     affinity: ''
     alias: ''
-    beta: '6.76'
+    alpha: '0.0141041'
+    burst_tag_name: '"burst"'
     comment: ''
-    cutoff_freq: sym_rate/64
-    decim: '1'
-    gain: '1'
-    interp: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
-    samp_rate: samp_rate
-    type: fir_filter_ccf
-    width: sym_rate/64
-    win: window.WIN_BLACKMAN
+    threshold_db: '-65'
   states:
+    _io_cache: ('Burst Detect & Squelch', 'blk', [('threshold_db', '-65'), ('alpha',
+      '1e-05'), ('burst_tag_name', "'rx_sob'")], [('0', 'complex', 1)], [('0', 'complex',
+      1)], 'Embedded Python Block example - a simple multiply const', ['alpha'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 708.0]
+    coordinate: [656, 628.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: low_pass_filter_1
   id: low_pass_filter
   parameters:
@@ -500,7 +424,7 @@ blocks:
     alpha7: '1.0'
     alpha8: '1.0'
     alpha9: '1.0'
-    autoscale: 'False'
+    autoscale: 'True'
     axislabels: 'True'
     color1: blue
     color10: dark blue
@@ -517,106 +441,9 @@ blocks:
     entags: 'True'
     grid: 'False'
     gui_hint: ''
-    label1: Signal Real
+    label1: Signal 1
     label10: Signal 10
-    label2: SIgnal Imag
-    label3: Trigger
-    label4: Signal 4
-    label5: Signal 5
-    label6: Signal 6
-    label7: Signal 7
-    label8: Signal 8
-    label9: Signal 9
-    legend: 'True'
-    marker1: '-1'
-    marker10: '-1'
-    marker2: '-1'
-    marker3: '-1'
-    marker4: '-1'
-    marker5: '-1'
-    marker6: '-1'
-    marker7: '-1'
-    marker8: '-1'
-    marker9: '-1'
-    name: '"Burst Tagged"'
-    nconnections: '2'
-    size: 1024*10
-    srate: samp_rate
-    stemplot: 'False'
-    style1: '1'
-    style10: '1'
-    style2: '1'
-    style3: '1'
-    style4: '1'
-    style5: '1'
-    style6: '1'
-    style7: '1'
-    style8: '1'
-    style9: '1'
-    tr_chan: '0'
-    tr_delay: '0'
-    tr_level: '1'
-    tr_mode: qtgui.TRIG_MODE_TAG
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: tx_sob
-    type: complex
-    update_time: '0.10'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    ylabel: Amplitude
-    ymax: '.005'
-    ymin: -.005
-    yunit: '""'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1328, 508.0]
-    rotation: 0
-    state: disabled
-- name: qtgui_time_sink_x_1
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'True'
-    axislabels: 'True'
-    color1: magenta
-    color10: dark blue
-    color2: red
-    color3: green
-    color4: black
-    color5: cyan
-    color6: magenta
-    color7: yellow
-    color8: dark red
-    color9: dark green
-    comment: ''
-    ctrlpanel: 'True'
-    entags: 'True'
-    grid: 'False'
-    gui_hint: ''
-    label1: LPF
-    label10: Signal 10
-    label2: Short
+    label2: Signal 2
     label3: Signal 3
     label4: Signal 4
     label5: Signal 5
@@ -635,9 +462,9 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '"Trigger"'
+    name: '""'
     nconnections: '2'
-    size: 1024*10
+    size: '1024'
     srate: samp_rate
     stemplot: 'False'
     style1: '1'
@@ -650,13 +477,13 @@ blocks:
     style7: '1'
     style8: '1'
     style9: '1'
-    tr_chan: '0'
+    tr_chan: '2'
     tr_delay: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_NORM
+    tr_level: '1'
+    tr_mode: qtgui.TRIG_MODE_TAG
     tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '""'
-    type: float
+    tr_tag: '"burst"'
+    type: complex
     update_time: '0.10'
     width1: '1'
     width10: '1'
@@ -676,9 +503,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1128, 916.0]
+    coordinate: [1200, 636.0]
     rotation: 0
-    state: disabled
+    state: true
 - name: qtgui_waterfall_sink_x_0
   id: qtgui_waterfall_sink_x
   parameters:
@@ -1239,31 +1066,17 @@ blocks:
     state: disabled
 
 connections:
-- [analog_simple_squelch_cc_0, '0', blocks_burst_tagger_0, '0']
 - [analog_simple_squelch_cc_0, '0', blocks_file_sink_0, '0']
-- [analog_simple_squelch_cc_0, '0', low_pass_filter_0, '0']
-- [analog_simple_squelch_cc_0, '0', qtgui_waterfall_sink_x_0_0, '0']
-- [blocks_burst_tagger_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_burst_tagger_0, '0', qtgui_waterfall_sink_x_0_0, '0']
-- [blocks_complex_to_mag_0, '0', blocks_float_to_complex_0, '0']
-- [blocks_complex_to_mag_0, '0', blocks_float_to_short_0, '0']
-- [blocks_complex_to_mag_0, '0', qtgui_time_sink_x_1, '0']
-- [blocks_complex_to_mag_squared_0, '0', blocks_float_to_complex_0, '0']
-- [blocks_complex_to_mag_squared_0, '0', blocks_float_to_short_0, '0']
-- [blocks_complex_to_mag_squared_0, '0', qtgui_time_sink_x_1, '0']
+- [analog_simple_squelch_cc_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_file_source_0, '0', blocks_throttle2_0, '0']
-- [blocks_float_to_complex_0, '0', qtgui_time_sink_x_0, '1']
-- [blocks_float_to_short_0, '0', blocks_burst_tagger_0, '1']
-- [blocks_float_to_short_0, '0', blocks_short_to_float_0, '0']
 - [blocks_freqshift_cc_0, '0', low_pass_filter_1, '0']
 - [blocks_freqshift_cc_0, '0', qtgui_waterfall_sink_x_0, '1']
-- [blocks_short_to_float_0, '0', qtgui_time_sink_x_1, '1']
 - [blocks_throttle2_0, '0', blocks_freqshift_cc_0, '0']
-- [low_pass_filter_0, '0', blocks_complex_to_mag_0, '0']
-- [low_pass_filter_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [epy_block_0, '0', qtgui_time_sink_x_0, '1']
+- [epy_block_0, '0', qtgui_waterfall_sink_x_0_0, '0']
 - [low_pass_filter_1, '0', analog_simple_squelch_cc_0, '0']
+- [low_pass_filter_1, '0', epy_block_0, '0']
 - [low_pass_filter_1, '0', qtgui_freq_sink_x_0, '0']
-- [low_pass_filter_1, '0', qtgui_time_sink_x_0, '0']
 - [low_pass_filter_1, '0', qtgui_waterfall_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', blocks_freqshift_cc_0, '0']
 
