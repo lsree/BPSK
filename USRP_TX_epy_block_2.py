@@ -9,6 +9,7 @@ be the parameters. All of them are required to have default values!
 import numpy as np
 from gnuradio import gr
 import pmt
+import queue
 
 
 class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
@@ -34,7 +35,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         
         # Register port and handler
         self.message_port_register_in(pmt.intern('MSG_In'))
-        self.message_port_register_out(pmt.intern('Packet'))
+        self.message_port_register_out(pmt.intern('Unpacked Packet'))
         self.set_msg_handler(pmt.intern('MSG_In'), self.handle_msg)
         
         
@@ -42,17 +43,12 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         #Get msg
         payload = pmt.to_python(msg)
         
-        print(f"Syncword Len {len(self.syncword)} syncword: {self.syncword}")
-        print(f"Payload: {payload}\n Payload type: {type(payload)}")
-        
         payload = np.fromstring(payload[1], dtype=np.uint8)
         payload_len = np.array([len(payload)], dtype=np.uint8)
-        print(f"payload_len {payload_len}")
         
-        print(f"payload_len + payload: {np.unpackbits(np.concatenate((payload_len, payload)), bitorder='big')}")
         packet = np.concatenate((self.preamble, self.syncword, np.unpackbits(np.concatenate((payload_len, payload)), bitorder='big')))
-        print(f"packet: {packet}")
+
      
         #Create PMT u8vector
         pmt_out = pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(packet), packet))
-        self.message_port_pub(pmt.intern('Packet'), pmt_out)
+        self.message_port_pub(pmt.intern('Unpacked Packet'), pmt_out)

@@ -14,7 +14,7 @@ import pmt
 class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
     """Embedded Python Block example - a simple multiply const"""
 
-    def __init__(self, threshold_db=-65, alpha=.00001, burst_tag_name = "rx_sob"):  # only default arguments here
+    def __init__(self, threshold_db=-65, alpha=.00001, burst_tag_name = "rx_sob", max_burst_len = 2^15):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(
             self,
@@ -29,6 +29,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.prev_filt = 0  #Save previous value of the filter
         self.tag_key = pmt.intern(burst_tag_name)
         self.burst_occurring = False #Holds state on if we're in a burst or not
+        self.max_burst_len = pmt.from_long(max_burst_len)
 
     def work(self, input_items, output_items):
         """example: multiply with constant"""
@@ -42,7 +43,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             
             if (self.prev_filt >= self.threshold):
                 if (not self.burst_occurring):  #Add tag if we're not in a burst
-                    self.add_item_tag(0, self.nitems_written(0) + i, self.tag_key, pmt.PMT_T)
+                    self.add_item_tag(0, self.nitems_written(0) + i, self.tag_key, 
+                        self.max_burst_len)
                     self.burst_occurring = True
                 output[i] = input_samp[i]
             else:
