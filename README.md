@@ -94,3 +94,22 @@ This section describes how I will create such a system
 
 ### Phase locked Loop
     * Tuning loop filter https://dsp.stackexchange.com/questions/64108/designing-a-pi-filter-for-a-costas-loop
+
+## Notes for Debugging
+### Timing Recovery
+After timing recovery the IQ plot should look like a clean-ish circle
+
+The following Timing Recovery Methods are available. They are broken into 2 categories: PLL-based feedback systems, and correlation based feed-forward systems. 
+
+
+#### Relevant Articles/Videos
+* [GRCon17 Lecture on Symbol Clock Recovery Block](https://youtu.be/uMEfx_l5Oxk)
+* [wirelesspi.com](wirelesspi.com)
+* [fred harris slides on polyphase timing sync](https://s3.amazonaws.com/embeddedrelated/user/124841/synchronization_qualcomm_2018_4_11449.pdf)
+* [Paper on PLL TEDs](https://s3.amazonaws.com/embeddedrelated/user/6420/part%20of%20timing%20error%20detectors_92419.pdf)
+
+
+### Fine Frequency Correction (PLL)
+* The PLL should turn the event circle into a cluster of points
+* The PLL requires the preamble to syncronize and lock onto the frequency
+* In BPSK the Q component of the signal should be diven to 0. If it is beginning to be unstable again, it could mean that the timing syncronization is off or that the PLL is tuned too aggressively. 
