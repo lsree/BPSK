@@ -101,6 +101,21 @@ After timing recovery the IQ plot should look like a clean-ish circle
 
 The following Timing Recovery Methods are available. They are broken into 2 categories: PLL-based feedback systems, and correlation based feed-forward systems. 
 
+#### PLL Timing Error Detctors
+1. Maximum Liklihood Detector
+1. Early-Late
+    * A special case of the generic maximum liklihood detector where there are 2 SPS
+    * Compares the the previous symbol and next symbol and multiplies it by the value of the  current symbol and tries to drive that value to zero
+    ``` interp_signal[i] * (interp_signal[i+dt] - interp_signal[i-dt]) ```
+1. Gardner/Zero Crossing
+    * Also a special case of the generic maximum liklihood detector where there are 2 SPS
+    * Does not require future samples, only needs the current and previous symbol.
+    * Works by comparing the previous symbol with the current symbol and multiplying it by a sample located between them
+    ```phase_offset = interp_signal[i-dt] * (interp_signal[i] - interp_signal[i-interp_sps])```
+    
+
+1. Mueller & Meuller
+
 
 #### Relevant Articles/Videos
 * [GRCon17 Lecture on Symbol Clock Recovery Block](https://youtu.be/uMEfx_l5Oxk)
