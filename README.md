@@ -51,12 +51,12 @@ d < 1000 meters
 * Per documentation use a sample rate >= 8Mhz
 * Baseband LPF exists in incrememnts of 1.75, 2.5, 3.5, 5, 5.5, ..., 14, 15, 20, 24, 28 MHz
 
+### Relevant SDR specs for USRP B200/B210
+* Clock PPM +/- 2 PPM -> @915Mhz the frequency can deviate +/- 1830 Hz
+
 
 ### Digital Specifications
-* sps = 8
-* Fs: 8Mhz
-* symbol/bit rate = 1Mbps
-* Bandwidth = 1Mhz
+* Baud Rate: 19.2 Kbd / 19.2k samples/symbol
 
 ### Packet Structure
 | Byte 0          | Byte 1          | Byte 2          | Byte 3          | Byte 4          | Byte N          | Byte N+1          |
