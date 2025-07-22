@@ -79,12 +79,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"serial=31909E4"'
+    value: '"serial=31909E8"'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 68.0]
+    coordinate: [288, 88.0]
     rotation: 0
     state: true
 - name: rx_gain
@@ -145,7 +145,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"serial=31909E8"'
+    value: '"serial=31909E4"'
   states:
     bus_sink: false
     bus_source: false
@@ -187,6 +187,7 @@ blocks:
     offset: '0'
     phase: '0'
     samp_rate: samp_rate
+    showports: 'False'
     type: complex
     waveform: analog.GR_COS_WAVE
   states:
@@ -539,7 +540,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    ant0: '"TX/RX"'
+    ant0: '"RX2"'
     ant1: '"RX2"'
     ant10: '"RX2"'
     ant11: '"RX2"'
@@ -709,7 +710,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: tx_device_addr
+    dev_addr: rx_device_addr
     dev_args: ''
     gain0: '0'
     gain1: '0'
@@ -977,3 +978,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.9.2
