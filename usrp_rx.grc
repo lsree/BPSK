@@ -51,7 +51,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 12.0]
+    coordinate: [272, 12.0]
     rotation: 0
     state: true
 - name: gain
@@ -72,19 +72,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 12.0]
+    coordinate: [400, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: int(2e6)
+    value: 500e3
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 12]
+    coordinate: [176, 12.0]
     rotation: 0
     state: enabled
 - name: sps
@@ -117,7 +117,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 28.0]
+    coordinate: [512, 12.0]
     rotation: 0
     state: true
 - name: sym_rate
@@ -132,43 +132,6 @@ blocks:
     coordinate: [80, 92.0]
     rotation: 0
     state: true
-- name: analog_simple_squelch_cc_0
-  id: analog_simple_squelch_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha: '0.0141041'
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    threshold: squelch_power
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [736, 460.0]
-    rotation: 0
-    state: true
-- name: blocks_burst_tagger_0
-  id: blocks_burst_tagger
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    false_key: burst
-    false_value: 'False'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    true_key: burst
-    true_value: 'True'
-    type: complex
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1400, 284.0]
-    rotation: 0
-    state: disabled
 - name: blocks_file_sink_0
   id: blocks_file_sink
   parameters:
@@ -184,65 +147,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 828.0]
-    rotation: 0
-    state: enabled
-- name: blocks_file_source_0
-  id: blocks_file_source
-  parameters:
-    affinity: ''
-    alias: ''
-    begin_tag: pmt.PMT_NIL
-    comment: ''
-    file: /home/rf/Documents/BPSK/usrp_rx_raw.iq
-    length: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    offset: '0'
-    repeat: 'False'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [0, 428.0]
-    rotation: 0
-    state: enabled
-- name: blocks_freqshift_cc_0
-  id: blocks_freqshift_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    freq: sym_rate
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    sample_rate: samp_rate
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [440, 204.0]
-    rotation: 0
-    state: true
-- name: blocks_stream_to_tagged_stream_0
-  id: blocks_stream_to_tagged_stream
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    len_tag_key: '"packet_len"'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    packet_len: ''
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1448, 772.0]
+    coordinate: [696, 700.0]
     rotation: 0
     state: disabled
 - name: blocks_tagged_stream_align_0
@@ -260,97 +165,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 636.0]
+    coordinate: [736, 436.0]
     rotation: 0
     state: true
-- name: blocks_tagged_stream_mux_0
-  id: blocks_tagged_stream_mux
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    lengthtagname: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    ninputs: ''
-    tag_preserve_head_pos: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1776, 412.0]
-    rotation: 0
-    state: disabled
-- name: blocks_throttle2_0
-  id: blocks_throttle2
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    ignoretag: 'True'
-    limit: auto
-    maximum: '0.1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samples_per_second: samp_rate
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [232, 452.0]
-    rotation: 0
-    state: enabled
-- name: digital_fll_band_edge_cc_0
-  id: digital_fll_band_edge_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    filter_size: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    rolloff: ''
-    samps_per_sym: ''
-    type: cc
-    w: ''
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1328, 448.0]
-    rotation: 0
-    state: disabled
-- name: digital_symbol_sync_xx_0
-  id: digital_symbol_sync_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    constellation: digital.constellation_bpsk().base()
-    damping: '1.0'
-    loop_bw: '0.045'
-    max_dev: '1.5'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nfilters: '128'
-    osps: '1'
-    pfb_mf_taps: '[]'
-    resamp_type: digital.IR_MMSE_8TAP
-    sps: sps
-    ted_gain: '1.0'
-    ted_type: digital.TED_MUELLER_AND_MULLER
-    type: cc
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [984, 148.0]
-    rotation: 0
-    state: disabled
 - name: epy_block_0
   id: epy_block
   parameters:
@@ -361,108 +178,43 @@ blocks:
       from gnuradio import gr\nfrom gnuradio import filter\nimport pmt\n\nclass blk(gr.sync_block):\
       \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
       \"Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
-      \ threshold_db=-65, alpha=.00001, burst_tag_name = \"rx_sob\", max_burst_len\
-      \ = 2^15):  # only default arguments here\n        \"\"\"arguments to this function\
-      \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
-      \        self,\n            name='Burst Detect & Squelch',   # will show up\
-      \ in GRC\n            in_sig=[np.complex64],\n            out_sig=[np.complex64]\n\
-      \        )\n        # if an attribute with the same name as a parameter is found,\n\
-      \        # a callback is registered (properties work, too).\n        self.threshold\
-      \ = 10**(threshold_db/10)\n        self.alpha = alpha\n        self.prev_filt\
-      \ = 0  #Save previous value of the filter\n        self.tag_key = pmt.intern(burst_tag_name)\n\
-      \        self.burst_occurring = False #Holds state on if we're in a burst or\
-      \ not\n        self.max_burst_len = pmt.from_long(max_burst_len)\n\n    def\
-      \ work(self, input_items, output_items):\n        \"\"\"example: multiply with\
-      \ constant\"\"\"\n        input_samp = input_items[0]\n        mag2 = input_samp\
-      \ * np.conj(input_samp)\n        \n        output = np.zeros(len(input_samp),\
-      \ dtype=complex)\n        # Apply Filter\n        for i in range(0, len(mag2)):\n\
-      \            self.prev_filt = self.alpha*mag2[i] + (1-self.alpha)*self.prev_filt\
-      \ \n            \n            if (self.prev_filt >= self.threshold):\n     \
-      \           if (not self.burst_occurring):  #Add tag if we're not in a burst\n\
-      \                    self.add_item_tag(0, self.nitems_written(0) + i, self.tag_key,\
-      \ \n                        self.max_burst_len)\n                    self.burst_occurring\
-      \ = True\n                output[i] = input_samp[i]\n            else:\n   \
-      \             self.burst_occurring = False\n                \n        output_items[0][:]\
+      \ threshold_db=-65, cutoff_freq=.01, burst_tag_name = \"rx_burst\"):  # only\
+      \ default arguments here\n        \"\"\"arguments to this function show up as\
+      \ parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n\
+      \            name='Burst Detect & Squelch',   # will show up in GRC\n      \
+      \      in_sig=[np.complex64],\n            out_sig=[np.complex64]\n        )\n\
+      \        # if an attribute with the same name as a parameter is found,\n   \
+      \     # a callback is registered (properties work, too).\n        self.threshold\
+      \ = 10**(threshold_db/10)\n        self.alpha = cutoff_freq/(1+cutoff_freq)\n\
+      \        self.prev_filt = 0  #Save previous value of the filter\n        self.tag_key\
+      \ = pmt.intern(burst_tag_name)\n\n\n    def work(self, input_items, output_items):\n\
+      \        \"\"\"example: multiply with constant\"\"\"\n        input_samp = input_items[0]\n\
+      \        mag2 = input_samp * np.conj(input_samp)\n        \n        output =\
+      \ np.zeros(len(input_samp), dtype=complex) #Squelched by default\n        #\
+      \ Apply Filter\n        for i in range(0, len(mag2)):\n            self.prev_filt\
+      \ = self.alpha*mag2[i] + (1-self.alpha)*self.prev_filt \n            \n    \
+      \        if (self.prev_filt >= self.threshold):\n                self.add_item_tag(0,\
+      \ self.nitems_written(0) + i, self.tag_key, \n                    pmt.PMT_T)\n\
+      \                output[i] = input_samp[i]\n\n                \n        output_items[0][:]\
       \ = output\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
-    alpha: '0.0141041'
     burst_tag_name: '"packet_len"'
     comment: ''
-    max_burst_len: int(sps*300)
+    cutoff_freq: 1/(sps*4)
     maxoutbuf: '0'
     minoutbuf: '0'
-    threshold_db: '-65'
+    threshold_db: squelch_power
   states:
-    _io_cache: ('Burst Detect & Squelch', 'blk', [('threshold_db', '-65'), ('alpha',
-      '1e-05'), ('burst_tag_name', "'rx_sob'"), ('max_burst_len', '13')], [('0', 'complex',
-      1)], [('0', 'complex', 1)], 'Embedded Python Block example - a simple multiply
-      const', ['alpha', 'max_burst_len'])
+    _io_cache: ('Burst Detect & Squelch', 'blk', [('threshold_db', '-65'), ('cutoff_freq',
+      '0.01'), ('burst_tag_name', "'rx_burst'")], [('0', 'complex', 1)], [('0', 'complex',
+      1)], 'Embedded Python Block example - a simple multiply const', [])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 612.0]
+    coordinate: [432, 316.0]
     rotation: 0
     state: enabled
-- name: epy_block_1
-  id: epy_block
-  parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
-      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
-      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, example_param=1.0):\
-      \  # only default arguments here\n        \"\"\"arguments to this function show\
-      \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
-      \   self,\n            name='Embedded Python Block',   # will show up in GRC\n\
-      \            in_sig=[np.complex64],\n            out_sig=[np.complex64]\n  \
-      \      )\n        # if an attribute with the same name as a parameter is found,\n\
-      \        # a callback is registered (properties work, too).\n        self.example_param\
-      \ = example_param\n\n    def work(self, input_items, output_items):\n      \
-      \  \"\"\"example: multiply with constant\"\"\"\n        output_items[0][:] =\
-      \ input_items[0] * self.example_param\n        return len(output_items[0])\n"
-    affinity: ''
-    alias: ''
-    comment: ''
-    example_param: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    _io_cache: ('Embedded Python Block', 'blk', [('example_param', '1.0')], [('0',
-      'complex', 1)], [('0', 'complex', 1)], 'Embedded Python Block example - a simple
-      multiply const', ['example_param'])
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [800, 716.0]
-    rotation: 0
-    state: disabled
-- name: low_pass_filter_1
-  id: low_pass_filter
-  parameters:
-    affinity: ''
-    alias: ''
-    beta: '6.76'
-    comment: ''
-    cutoff_freq: sym_rate*1.2
-    decim: '1'
-    gain: '1'
-    interp: '1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_rate: samp_rate
-    type: fir_filter_ccf
-    width: sym_rate*.1
-    win: window.WIN_HAMMING
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [496, 348.0]
-    rotation: 0
-    state: true
 - name: qtgui_freq_sink_x_0
   id: qtgui_freq_sink_x
   parameters:
@@ -541,7 +293,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [760, 300.0]
+    coordinate: [600, 164.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -598,8 +350,8 @@ blocks:
     marker8: '-1'
     marker9: '-1'
     name: '""'
-    nconnections: '2'
-    size: '1024'
+    nconnections: '1'
+    size: 1024*5
     srate: samp_rate
     stemplot: 'False'
     style1: '1'
@@ -612,7 +364,7 @@ blocks:
     style7: '1'
     style8: '1'
     style9: '1'
-    tr_chan: '2'
+    tr_chan: '1'
     tr_delay: '0'
     tr_level: '1'
     tr_mode: qtgui.TRIG_MODE_TAG
@@ -638,7 +390,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1200, 636.0]
+    coordinate: [1152, 532.0]
     rotation: 0
     state: true
 - name: qtgui_waterfall_sink_x_0
@@ -690,7 +442,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     name: '"Waterfall RC"'
-    nconnections: '2'
+    nconnections: '1'
     showports: 'False'
     type: complex
     update_time: '0.1'
@@ -699,7 +451,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 188.0]
+    coordinate: [352, 148.0]
     rotation: 0
     state: true
 - name: qtgui_waterfall_sink_x_0_0
@@ -800,7 +552,7 @@ blocks:
     ant7: '"RX2"'
     ant8: '"RX2"'
     ant9: '"RX2"'
-    bw0: sym_rate*2.5
+    bw0: '0'
     bw1: '0'
     bw10: '0'
     bw11: '0'
@@ -832,7 +584,7 @@ blocks:
     bw7: '0'
     bw8: '0'
     bw9: '0'
-    center_freq0: carrier_freq+sym_rate
+    center_freq0: carrier_freq
     center_freq1: '0'
     center_freq10: '0'
     center_freq11: '0'
@@ -1196,25 +948,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [120, 172.0]
+    coordinate: [72, 284.0]
     rotation: 0
-    state: disabled
+    state: enabled
 
 connections:
-- [analog_simple_squelch_cc_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_file_source_0, '0', blocks_throttle2_0, '0']
-- [blocks_freqshift_cc_0, '0', low_pass_filter_1, '0']
-- [blocks_freqshift_cc_0, '0', qtgui_waterfall_sink_x_0, '1']
-- [blocks_tagged_stream_align_0, '0', qtgui_time_sink_x_0, '1']
-- [blocks_throttle2_0, '0', blocks_freqshift_cc_0, '0']
+- [blocks_tagged_stream_align_0, '0', qtgui_time_sink_x_0, '0']
 - [epy_block_0, '0', blocks_file_sink_0, '0']
 - [epy_block_0, '0', blocks_tagged_stream_align_0, '0']
 - [epy_block_0, '0', qtgui_waterfall_sink_x_0_0, '0']
-- [low_pass_filter_1, '0', analog_simple_squelch_cc_0, '0']
-- [low_pass_filter_1, '0', epy_block_0, '0']
-- [low_pass_filter_1, '0', qtgui_freq_sink_x_0, '0']
-- [low_pass_filter_1, '0', qtgui_waterfall_sink_x_0, '0']
-- [uhd_usrp_source_0, '0', blocks_freqshift_cc_0, '0']
+- [uhd_usrp_source_0, '0', epy_block_0, '0']
+- [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '0']
+- [uhd_usrp_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 
 metadata:
   file_format: 1
