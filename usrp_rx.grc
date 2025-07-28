@@ -165,6 +165,24 @@ blocks:
     bus_structure: null
     coordinate: [1456, 444.0]
     rotation: 0
+    state: disabled
+- name: blocks_stream_to_vector_0
+  id: blocks_stream_to_vector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: '1024'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 272.0]
+    rotation: 0
     state: enabled
 - name: blocks_tagged_stream_align_0
   id: blocks_tagged_stream_align
@@ -181,9 +199,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 316.0]
+    coordinate: [712, 320.0]
     rotation: 0
-    state: true
+    state: enabled
+- name: blocks_vector_to_stream_0
+  id: blocks_vector_to_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: '1024'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 320.0]
+    rotation: 0
+    state: enabled
 - name: epy_block_0
   id: epy_block
   parameters:
@@ -245,23 +281,27 @@ blocks:
       \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
       \"Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
       \ nfft=1024, order=2):  # only default arguments here\n        \"\"\"arguments\
-      \ to this function show up as parameters in GRC\"\"\"\n        gr.basic_block.__init__(\n\
+      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
       \            self,\n            name='Coarse Frequency Correction',   # will\
-      \ show up in GRC\n            in_sig=[np.complex64],\n            out_sig=[np.complex64]\n\
-      \        )\n        # if an attribute with the same name as a parameter is found,\n\
-      \        # a callback is registered (properties work, too).\n        self.nfft\
-      \ = nfft\n        self.set_output_multiple(nfft)\n        self.order = order\n\
-      \        self.fft_freqs = fft.fftfreq(nfft)\n\n        \n    def general_work(self,\
-      \ input_items, output_items):\n        \"\"\"example: multiply with constant\"\
-      \"\"\n        samples = input_items[0]\n        if (len(samples) >= self.nfft):\n\
-      \            freq_magnitudes = fft.fft(samples**self.order, self.nfft)\n\n \
-      \           freq_offset = self.fft_freqs[np.argmax(np.abs(freq_magnitudes))]/self.order\n\
-      \            \n            print(f\"Freq offset: {freq_offset}\")\n        \
-      \    \n            \n            \n            output_items[0][:self.nfft] =\
-      \ samples[:self.nfft]*np.exp(2j*(np.pi*freq_offset*np.arange(0,self.nfft)))\n\
-      \            self.produce(0, self.nfft)\n            self.consume(0, self.nfft)\n\
-      \        else:\n            self.consume(0,0)\n            self.produce(0,0)\n\
-      \        \n        \n        return len(output_items[0])\n"
+      \ show up in GRC\n            in_sig=[(np.complex64, nfft)],\n            out_sig=[(np.complex64,\
+      \ nfft)]\n        )\n        # if an attribute with the same name as a parameter\
+      \ is found,\n        # a callback is registered (properties work, too).\n  \
+      \      self.nfft = nfft\n        self.set_output_multiple(nfft)\n        self.order\
+      \ = order\n        self.fft_freqs = fft.fftfreq(nfft)\n\n        \n    #def\
+      \ general_work(self, input_items, output_items):\n    def work(self, input_items,\
+      \ output_items):\n        \"\"\"example: multiply with constant\"\"\"\n    \
+      \    samples = input_items[0]\n        print(f\"Len samples: {input_items[0].shape}\"\
+      )\n        tagTuple = self.get_tags_in_window(0, 0, len(input_items[0]))\n \
+      \       if(tagTuple):\n            print(f\"tagTuple Len {len(tagTuple)}, Num\
+      \ items {len(input_items[0])}\")\n        #Get Tags\n\n       \n        \n\n\
+      \        freq_magnitudes = fft.fft(samples**self.order, self.nfft)\n       \
+      \ print(f\"Argmax: {np.argmax(np.abs(freq_magnitudes))}\")\n        freq_offset\
+      \ = self.fft_freqs[np.argmax(np.abs(freq_magnitudes))]/self.order\n        print(f\"\
+      Freq offset: {freq_offset}\")\n            \n            \n            \n  \
+      \      #output_items[0][:] = samples[:self.nfft]*np.exp(2j*(np.pi*freq_offset*np.arange(0,self.nfft)))\n\
+      \            #self.produce(0, self.nfft)\n            #self.consume(0, self.nfft)\n\
+      \        #else:\n            #self.consume(0,0)\n            #self.produce(0,0)\n\
+      \        output_items = input_items\n        \n        \n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
@@ -271,14 +311,14 @@ blocks:
     order: '2'
   states:
     _io_cache: ('Coarse Frequency Correction', 'blk', [('nfft', '1024'), ('order',
-      '2')], [('0', 'complex', 1)], [('0', 'complex', 1)], 'Embedded Python Block
-      example - a simple multiply const', ['nfft', 'order'])
+      '2')], [('0', 'complex', 1024)], [('0', 'complex', 1024)], 'Embedded Python
+      Block example - a simple multiply const', ['nfft', 'order'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 316.0]
+    coordinate: [1088, 312.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: fft_filter_xxx_0
   id: fft_filter_xxx
   parameters:
@@ -297,6 +337,27 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1056, 484.0]
+    rotation: 0
+    state: disabled
+- name: fft_vxx_0
+  id: fft_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    fft_size: '1024'
+    forward: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nthreads: '1'
+    shift: 'True'
+    type: complex
+    window: window.blackmanharris(1024)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1128, 80.0]
     rotation: 0
     state: disabled
 - name: qtgui_freq_sink_x_0
@@ -476,7 +537,7 @@ blocks:
     bus_structure: null
     coordinate: [1480, 164.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: qtgui_waterfall_sink_x_0
   id: qtgui_waterfall_sink_x
   parameters:
@@ -774,7 +835,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=30BC4A2"'
+    dev_addr: '"serial=31909E8"'
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1037,15 +1098,16 @@ blocks:
     state: enabled
 
 connections:
-- [blocks_tagged_stream_align_0, '0', epy_block_1, '0']
+- [blocks_stream_to_vector_0, '0', epy_block_1, '0']
+- [blocks_tagged_stream_align_0, '0', blocks_stream_to_vector_0, '0']
+- [blocks_vector_to_stream_0, '0', qtgui_time_sink_x_0, '0']
 - [epy_block_0, '0', blocks_tagged_stream_align_0, '0']
 - [epy_block_0, '0', qtgui_waterfall_sink_x_0_0, '0']
-- [epy_block_1, '0', blocks_file_sink_0, '0']
-- [epy_block_1, '0', qtgui_time_sink_x_0, '0']
+- [epy_block_1, '0', blocks_vector_to_stream_0, '0']
 - [uhd_usrp_source_0, '0', epy_block_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
+  grc_version: 3.10.9.2
