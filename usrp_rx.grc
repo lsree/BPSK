@@ -132,6 +132,22 @@ blocks:
     coordinate: [80, 92.0]
     rotation: 0
     state: true
+- name: blocks_complex_to_mag_squared_0
+  id: blocks_complex_to_mag_squared
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1016, 120.0]
+    rotation: 0
+    state: disabled
 - name: blocks_file_sink_0
   id: blocks_file_sink
   parameters:
@@ -147,9 +163,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [696, 700.0]
+    coordinate: [1456, 444.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_tagged_stream_align_0
   id: blocks_tagged_stream_align
   parameters:
@@ -165,38 +181,41 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 436.0]
+    coordinate: [704, 316.0]
     rotation: 0
     state: true
 - name: epy_block_0
   id: epy_block
   parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\nfrom gnuradio import filter\nimport pmt\n\nclass blk(gr.sync_block):\
-      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
-      \"Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
-      \ threshold_db=-65, cutoff_freq=.01, burst_tag_name = \"rx_burst\"):  # only\
-      \ default arguments here\n        \"\"\"arguments to this function show up as\
-      \ parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n\
-      \            name='Burst Detect & Squelch',   # will show up in GRC\n      \
-      \      in_sig=[np.complex64],\n            out_sig=[np.complex64]\n        )\n\
-      \        # if an attribute with the same name as a parameter is found,\n   \
-      \     # a callback is registered (properties work, too).\n        self.threshold\
-      \ = 10**(threshold_db/10)\n        self.alpha = cutoff_freq/(1+cutoff_freq)\n\
-      \        self.prev_filt = 0  #Save previous value of the filter\n        self.tag_key\
-      \ = pmt.intern(burst_tag_name)\n\n\n    def work(self, input_items, output_items):\n\
-      \        \"\"\"example: multiply with constant\"\"\"\n        input_samp = input_items[0]\n\
-      \        mag2 = input_samp * np.conj(input_samp)\n        \n        output =\
-      \ np.zeros(len(input_samp), dtype=complex) #Squelched by default\n        #\
-      \ Apply Filter\n        for i in range(0, len(mag2)):\n            self.prev_filt\
-      \ = self.alpha*mag2[i] + (1-self.alpha)*self.prev_filt \n            \n    \
-      \        if (self.prev_filt >= self.threshold):\n                self.add_item_tag(0,\
-      \ self.nitems_written(0) + i, self.tag_key, \n                    pmt.PMT_T)\n\
-      \                output[i] = input_samp[i]\n\n                \n        output_items[0][:]\
-      \ = output\n        return len(output_items[0])\n"
+    _source_code: "\"\"\"\nThis block tags bursts greater than the threshold and squelches\
+      \ samples outside of that burst to zero. It does this by using an Exponentially\
+      \ Weighted Moving Average Filter (EWMA). This is a type of single pole IIR filter.\
+      \ Samples are tagged True if the block believes a burst is occurring. \n\nThreshold_db\
+      \    Cutoff Threshold in dB\nCutoff_Freq     Cutoff frequency normalized to\
+      \ sample rate\nBurst_Tag_Name  Name of tag that gets marked true if burst is\
+      \ occurring\n\"\"\"\n\nimport numpy as np\nfrom gnuradio import gr\nfrom gnuradio\
+      \ import filter\nimport pmt\n\nclass blk(gr.sync_block):  # other base classes\
+      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
+      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, threshold_db=-65,\
+      \ cutoff_freq=.01, burst_tag_name = \"rx_burst\"):  # only default arguments\
+      \ here\n        \"\"\"arguments to this function show up as parameters in GRC\"\
+      \"\"\n        gr.sync_block.__init__(\n            self,\n            name='Burst\
+      \ Detect & Squelch',   # will show up in GRC\n            in_sig=[np.complex64],\n\
+      \            out_sig=[np.complex64]\n        )\n        # if an attribute with\
+      \ the same name as a parameter is found,\n        # a callback is registered\
+      \ (properties work, too).\n        self.threshold = 10**(threshold_db/10)\n\
+      \        self.alpha = cutoff_freq/(1+cutoff_freq)\n        self.prev_filt =\
+      \ 0  #Save previous value of the filter\n        self.tag_key = pmt.intern(burst_tag_name)\n\
+      \n\n    def work(self, input_items, output_items):\n        \"\"\"example: multiply\
+      \ with constant\"\"\"\n        input_samp = input_items[0]\n        mag2 = input_samp\
+      \ * np.conj(input_samp)\n        \n        output = np.zeros(len(input_samp),\
+      \ dtype=complex) #Squelched by default\n        # Apply Filter\n        for\
+      \ i in range(0, len(mag2)):\n            self.prev_filt = self.alpha*mag2[i]\
+      \ + (1-self.alpha)*self.prev_filt \n            \n            if (self.prev_filt\
+      \ >= self.threshold):\n                self.add_item_tag(0, self.nitems_written(0)\
+      \ + i, self.tag_key, \n                    pmt.PMT_T)\n                output[i]\
+      \ = input_samp[i]\n\n                \n        output_items[0][:] = output\n\
+      \        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     burst_tag_name: '"packet_len"'
@@ -212,9 +231,74 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 316.0]
+    coordinate: [416, 300.0]
     rotation: 0
     state: enabled
+- name: epy_block_1
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from scipy import signal, fft\nfrom gnuradio import gr\n\n\nclass blk(gr.sync_block):\
+      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
+      \"Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
+      \ nfft=1024, order=2):  # only default arguments here\n        \"\"\"arguments\
+      \ to this function show up as parameters in GRC\"\"\"\n        gr.basic_block.__init__(\n\
+      \            self,\n            name='Coarse Frequency Correction',   # will\
+      \ show up in GRC\n            in_sig=[np.complex64],\n            out_sig=[np.complex64]\n\
+      \        )\n        # if an attribute with the same name as a parameter is found,\n\
+      \        # a callback is registered (properties work, too).\n        self.nfft\
+      \ = nfft\n        self.set_output_multiple(nfft)\n        self.order = order\n\
+      \        self.fft_freqs = fft.fftfreq(nfft)\n\n        \n    def general_work(self,\
+      \ input_items, output_items):\n        \"\"\"example: multiply with constant\"\
+      \"\"\n        samples = input_items[0]\n        if (len(samples) >= self.nfft):\n\
+      \            freq_magnitudes = fft.fft(samples**self.order, self.nfft)\n\n \
+      \           freq_offset = self.fft_freqs[np.argmax(np.abs(freq_magnitudes))]/self.order\n\
+      \            \n            print(f\"Freq offset: {freq_offset}\")\n        \
+      \    \n            \n            \n            output_items[0][:self.nfft] =\
+      \ samples[:self.nfft]*np.exp(2j*(np.pi*freq_offset*np.arange(0,self.nfft)))\n\
+      \            self.produce(0, self.nfft)\n            self.consume(0, self.nfft)\n\
+      \        else:\n            self.consume(0,0)\n            self.produce(0,0)\n\
+      \        \n        \n        return len(output_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nfft: '1024'
+    order: '2'
+  states:
+    _io_cache: ('Coarse Frequency Correction', 'blk', [('nfft', '1024'), ('order',
+      '2')], [('0', 'complex', 1)], [('0', 'complex', 1)], 'Embedded Python Block
+      example - a simple multiply const', ['nfft', 'order'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 316.0]
+    rotation: 0
+    state: true
+- name: fft_filter_xxx_0
+  id: fft_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nthreads: '1'
+    samp_delay: '0'
+    taps: ''
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1056, 484.0]
+    rotation: 0
+    state: disabled
 - name: qtgui_freq_sink_x_0
   id: qtgui_freq_sink_x
   parameters:
@@ -293,7 +377,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 164.0]
+    coordinate: [480, 156.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -390,7 +474,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 532.0]
+    coordinate: [1480, 164.0]
     rotation: 0
     state: true
 - name: qtgui_waterfall_sink_x_0
@@ -451,7 +535,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 148.0]
+    coordinate: [264, 156.0]
     rotation: 0
     state: true
 - name: qtgui_waterfall_sink_x_0_0
@@ -512,7 +596,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1136, 372.0]
+    coordinate: [728, 156.0]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -953,10 +1037,11 @@ blocks:
     state: enabled
 
 connections:
-- [blocks_tagged_stream_align_0, '0', qtgui_time_sink_x_0, '0']
-- [epy_block_0, '0', blocks_file_sink_0, '0']
+- [blocks_tagged_stream_align_0, '0', epy_block_1, '0']
 - [epy_block_0, '0', blocks_tagged_stream_align_0, '0']
 - [epy_block_0, '0', qtgui_waterfall_sink_x_0_0, '0']
+- [epy_block_1, '0', blocks_file_sink_0, '0']
+- [epy_block_1, '0', qtgui_time_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', epy_block_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_waterfall_sink_x_0, '0']
