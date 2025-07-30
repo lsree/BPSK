@@ -111,7 +111,7 @@ blocks:
     start: '-100'
     step: '1'
     stop: '100'
-    value: '-65'
+    value: '-50'
     widget: counter_slider
   states:
     bus_sink: false
@@ -165,7 +165,7 @@ blocks:
     bus_structure: null
     coordinate: [1456, 444.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_stream_to_vector_0
   id: blocks_stream_to_vector
   parameters:
@@ -297,11 +297,12 @@ blocks:
       \        # 2. Id burst and fft first part of burst and then maintain that correction\
       \ for the whole burst\n        # 3. Implement a smoothing function\n       \
       \ \n        tagTuple = self.get_tags_in_window(0, 0, len(input_vectors))\n \
-      \       if(tagTuple):\n            print(f\"tagTuple Offset {tagTuple[0].offset}\"\
-      )# Key {pmt.to_python(tagTuple[0].key)}\")\n\n        for i in range(0, len(input_vectors)):\n\
-      \            samples = input_vectors[i]\n            print(f\"Len samples: {samples.shape}\"\
-      )\n\n       \n        \n\n            freq_magnitudes = np.abs(fft.fft(samples**self.order,\
-      \ self.nfft))\n            freq_offset = self.fft_freqs[np.argmax(freq_magnitudes)]#/self.order\n\
+      \       if(tagTuple):\n            for tag in tagTuple:\n                print(f\"\
+      tagTuple Offset {tag.offset}\")# Key {pmt.to_python(tagTuple[0].key)}\")\n\n\
+      \        for i in range(0, len(input_vectors)):\n            samples = input_vectors[i]\n\
+      \            #print(f\"Len samples: {samples.shape}\")\n\n       \n        \n\
+      \n            freq_magnitudes = np.abs(fft.fft(samples**self.order, self.nfft))\n\
+      \            freq_offset = self.fft_freqs[np.argmax(freq_magnitudes)]#/self.order\n\
       \            print(f\"Freq offset: {freq_offset}\")\n            \n        \
       \    \n            output_items[0][i] = samples*np.exp(2j*np.pi*freq_offset*self.time_vector)\n\
       \        \n        \n        return len(output_items[0])\n"
@@ -647,7 +648,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    ant0: '"TX/RX"'
+    ant0: '"RX2"'
     ant1: '"RX2"'
     ant10: '"RX2"'
     ant11: '"RX2"'
@@ -817,7 +818,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=30BC4A2"'
+    dev_addr: '"serial=31909E8"'
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1093,4 +1094,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
+  grc_version: 3.10.9.2
