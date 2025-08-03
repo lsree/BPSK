@@ -51,9 +51,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 12.0]
+    coordinate: [280, 12.0]
     rotation: 0
     state: true
+- name: coarse_freq_fft_size
+  id: variable
+  parameters:
+    comment: ''
+    value: '2048'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 76.0]
+    rotation: 0
+    state: enabled
 - name: gain
   id: variable_qtgui_range
   parameters:
@@ -111,7 +123,7 @@ blocks:
     start: '-100'
     step: '1'
     stop: '100'
-    value: '-50'
+    value: '-60'
     widget: counter_slider
   states:
     bus_sink: false
@@ -165,7 +177,7 @@ blocks:
     bus_structure: null
     coordinate: [1456, 444.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_stream_to_vector_0
   id: blocks_stream_to_vector
   parameters:
@@ -174,7 +186,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_items: '1024'
+    num_items: coarse_freq_fft_size
     type: complex
     vlen: '1'
   states:
@@ -210,7 +222,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_items: '1024'
+    num_items: coarse_freq_fft_size
     type: complex
     vlen: '1'
   states:
@@ -273,50 +285,54 @@ blocks:
 - name: epy_block_1
   id: epy_block
   parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from scipy import signal, fft\nfrom gnuradio import gr\nimport pmt\n\nclass\
-      \ blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block\n\
-      \    \"\"\"Embedded Python Block example - a simple multiply const\"\"\"\n\n\
-      \    def __init__(self, nfft=1024, order=2):  # only default arguments here\n\
-      \        \"\"\"arguments to this function show up as parameters in GRC\"\"\"\
-      \n        gr.sync_block.__init__(\n            self,\n            name='Coarse\
-      \ Frequency Correction',   # will show up in GRC\n            in_sig=[(np.complex64,\
-      \ nfft)],\n            out_sig=[(np.complex64, nfft)]\n        )\n        #\
-      \ if an attribute with the same name as a parameter is found,\n        # a callback\
-      \ is registered (properties work, too).\n        self.nfft = nfft\n        #self.set_output_multiple(nfft)\n\
-      \        self.order = order\n        self.fft_freqs = fft.fftfreq(nfft)\n  \
-      \      self.time_vector = np.arange(0, nfft)/nfft\n\n        \n    #def general_work(self,\
-      \ input_items, output_items):\n    def work(self, input_items, output_items):\n\
-      \        \"\"\"example: multiply with constant\"\"\"\n        input_vectors\
-      \ = input_items[0]\n        print(f\"Len input: {input_items[0].shape}\")\n\
-      \        \n        #TODO Need to handle transition between fft chunks either\n\
-      \        # 1. Id burst and fft the whole burst. Need to reset between bursts\n\
-      \        # 2. Id burst and fft first part of burst and then maintain that correction\
-      \ for the whole burst\n        # 3. Implement a smoothing function\n       \
-      \ \n        tagTuple = self.get_tags_in_window(0, 0, len(input_vectors))\n \
-      \       if(tagTuple):\n            for tag in tagTuple:\n                print(f\"\
-      tagTuple Offset {tag.offset}\")# Key {pmt.to_python(tagTuple[0].key)}\")\n\n\
-      \        for i in range(0, len(input_vectors)):\n            samples = input_vectors[i]\n\
-      \            #print(f\"Len samples: {samples.shape}\")\n\n       \n        \n\
-      \n            freq_magnitudes = np.abs(fft.fft(samples**self.order, self.nfft))\n\
-      \            freq_offset = self.fft_freqs[np.argmax(freq_magnitudes)]#/self.order\n\
-      \            print(f\"Freq offset: {freq_offset}\")\n            \n        \
-      \    \n            output_items[0][i] = samples*np.exp(2j*np.pi*freq_offset*self.time_vector)\n\
-      \        \n        \n        return len(output_items[0])\n"
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nThis block assumes that the\
+      \ bursty data is aligned (Tagged stream aligned using \n\n        #TODO Need\
+      \ to handle transition between fft chunks either\n        # 1. Id burst and\
+      \ fft the whole burst. Need to reset between bursts\n        # 2. Id burst and\
+      \ fft first part of burst and then maintain that correction for the whole burst\n\
+      \        # 3. Implement a smoothing function\n\n\n            #for tag in tagTuple:\n\
+      \            #print(f\"tagTuple Offset {tag.offset} Key {pmt.to_python(tagTuple[0].key)}\"\
+      )\n            #print(f\"Len input: {input_items[0].shape}\")\n            #print(f\"\
+      ninput items: {self.nitems_read(0)} Relative Offset: {tag.offset - self.nitems_read(0)}\"\
+      )\n\"\"\"\n\nimport numpy as np\nfrom scipy import signal, fft\nfrom gnuradio\
+      \ import gr\nimport pmt\n\nclass blk(gr.sync_block):  # other base classes are\
+      \ basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block example\
+      \ - a simple multiply const\"\"\"\n\n    def __init__(self, nfft=2048, order=2,\
+      \ burst_tag_name = \"rx_burst\"):  # only default arguments here\n        \"\
+      \"\"arguments to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Coarse Frequency Correction',   # will\
+      \ show up in GRC\n            in_sig=[(np.complex64, nfft)],\n            out_sig=[(np.complex64,\
+      \ nfft)]\n        )\n        # if an attribute with the same name as a parameter\
+      \ is found,\n        # a callback is registered (properties work, too).\n  \
+      \      self.nfft = nfft\n        #self.set_output_multiple(nfft)\n        self.order\
+      \ = order\n        self.fft_freqs = fft.fftfreq(nfft)\n        self.time_vector\
+      \ = np.arange(0, nfft)/nfft\n        self.tag_key = pmt.intern(burst_tag_name)\n\
+      \n        \n    #def general_work(self, input_items, output_items):\n    def\
+      \ work(self, input_items, output_items):\n        input_vectors = input_items[0]\n\
+      \        \n        #Check if correct tag is present\n        tagTuple = self.get_tags_in_window(0,\
+      \ 0, len(input_vectors), self.tag_key)\n        if(tagTuple):   #I'm not going\
+      \ to check each tag for it's location because that would be computationally\
+      \ intensive     \n            #Intead we'll just FFT each group of inputs vectors\
+      \ that have a burst tag present somewhere in them. \n            for i in range(0,\
+      \ len(input_vectors)):\n                samples = input_vectors[i]\n\n     \
+      \           freq_magnitudes = np.abs(fft.fft(samples**self.order, self.nfft))\n\
+      \                freq_offset = self.fft_freqs[np.argmax(freq_magnitudes)]/self.order\n\
+      \                output_items[0][i] = samples*np.exp(2j*np.pi*freq_offset*self.time_vector)\n\
+      \        else:\n            output_items[0][:] = 0\n        \n        return\
+      \ len(output_items[0])\n"
     affinity: ''
     alias: ''
+    burst_tag_name: '''packet_len'''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    nfft: '1024'
+    nfft: coarse_freq_fft_size
     order: '2'
   states:
-    _io_cache: ('Coarse Frequency Correction', 'blk', [('nfft', '1024'), ('order',
-      '2')], [('0', 'complex', 1024)], [('0', 'complex', 1024)], 'Embedded Python
-      Block example - a simple multiply const', ['nfft', 'order'])
+    _io_cache: ('Coarse Frequency Correction', 'blk', [('nfft', '2048'), ('order',
+      '2'), ('burst_tag_name', "'rx_burst'")], [('0', 'complex', 2048)], [('0', 'complex',
+      2048)], 'Embedded Python Block example - a simple multiply const', ['nfft',
+      'order'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -818,7 +834,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=31909E8"'
+    dev_addr: '"serial=30BC4A2"'
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1094,4 +1110,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.9.2
+  grc_version: 3.10.7.0
