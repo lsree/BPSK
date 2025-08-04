@@ -338,13 +338,14 @@ blocks:
       \ + error.imag\n    \n    def early_late_TED(self,signal, sample_pos, sps):\
       \ \n        error = signal[sample_pos] * (signal[sample_pos+int(sps/2)] - signal[sample_pos-int(sps/2)])\n\
       \        return error.real + error.imag\n        \n    def __init__(self, interpolation_factor=1,\
-      \ sps=2, timing_error_detector=\"gardner\", damping_factor=1, bandwidth=.2):\
-      \  # only default arguments here\n        \"\"\"arguments to this function show\
-      \ up as parameters in GRC\"\"\"\n        gr.decim_block.__init__(\n        \
-      \    self,\n            name='Timing Error Detector',   \n            in_sig=[np.complex64],\n\
-      \            out_sig=[np.complex64], \n            decim = sps\n        )\n\
-      \        # if an attribute with the same name as a parameter is found,\n   \
-      \     # a callback is registered (properties work, too).\n        self.set_relative_rate(1.0/sps)\n\
+      \ sps=2, timing_error_detector=\"gardner\", damping_factor=1, bandwidth=.2,\
+      \ burst_tag_name='rx_burst'):  # only default arguments here\n        \"\"\"\
+      arguments to this function show up as parameters in GRC\"\"\"\n        gr.decim_block.__init__(\n\
+      \            self,\n            name='Timing Error Detector',   \n         \
+      \   in_sig=[np.complex64],\n            out_sig=[np.complex64], \n         \
+      \   decim = sps\n        )\n        # if an attribute with the same name as\
+      \ a parameter is found,\n        # a callback is registered (properties work,\
+      \ too).\n        self.tag_key = pmt.intern(burst_tag_name)\n        self.set_relative_rate(1.0/sps)\n\
       \        self.interpolation_factor = interpolation_factor\n        self.sps\
       \ = sps\n        self.interp_sps = sps*interpolation_factor\n        self.pll_i\
       \ = self.interp_sps\n        \n        #Calculate Ki & Kp\n        theta = bandwidth/\
@@ -357,28 +358,25 @@ blocks:
       \ = self.gardner_TED\n        #elif timing_error_detector == \"early_late\"\
       :\n        #    self.timing_error_detector = self.early_late_TED\n        #else:\n\
       \        #    raise ValueError(\"Invalid Timing Error Detector\")\n        \
-      \    \n\n    def work(self, input_items, output_items):\n        #Check if in\
-      \ Burst\n        \n        #Interpolate\n        print(\"Start\")\n        interp_signal\
-      \ = signal.resample_poly(input_items[0], self.interpolation_factor, 1)\n   \
-      \     #Implement PLL\n        out_samples = np.full(int(len(input_items[0])/self.sps),\
-      \ -1, dtype=np.complex64)  #Make -1 to detect errors\n        print(f\"Begin\
-      \ PLL: {self.pll_i}\")\n        while self.pll_i < len(interp_signal) - self.interp_sps:\n\
-      \            error = self.timing_error_detector(interp_signal, self.pll_i, self.interp_sps)\n\
-      \            self.error_integral += self.ki*error\n            pll_output =\
-      \ self.kp*error + self.error_integral\n            self.pll_i += int(self.interp_sps\
-      \ + np.rint(pll_output*self.interp_sps))\n            \n            #print(f\"\
-      self.pll_i/self.interp_sps {self.pll_i/self.interp_sps}\")\n        #    out_samples\
-      \ = interp_signal[self.pll_i]\n            output_items[0][int(self.pll_i/self.interp_sps)]\
-      \ = interp_signal[self.pll_i]\n        #output_items[0][:] = out_samples\n \
-      \       #Wrap self.pll_i for the next chunk of data\n        print(f\"Last PLL:\
-      \ {self.pll_i} div interp_sps {self.pll_i/self.interp_sps}\")\n        print(f\"\
-      Len Input: {len(input_items[0])} Len Output {len(output_items[0])} div {len(input_items[0])/len(output_items[0])}\"\
-      )\n        self.pll_i = self.pll_i % self.interp_sps + self.interp_sps\n   \
-      \     print(f\"Last PLL2: {self.pll_i}\")\n        return len(output_items[0])\n\
+      \    \n\n    def work(self, input_items, output_items):\n        #TODO Check\
+      \ if in Burst to reduce compute\n        tagTuple = self.get_tags_in_window(0,\
+      \ 0, len(input_items[0]), self.tag_key)\n        if(tagTuple):   #I'm not going\
+      \ to check each tag for it's location because that would be\n            #Interpolate\n\
+      \            interp_signal = signal.resample_poly(input_items[0], self.interpolation_factor,\
+      \ 1)\n            #Implement PLL\n            while self.pll_i < len(interp_signal)\
+      \ - self.interp_sps:\n                error = self.timing_error_detector(interp_signal,\
+      \ self.pll_i, self.interp_sps)\n                self.error_integral += self.ki*error\n\
+      \                pll_output = self.kp*error + self.error_integral\n        \
+      \        self.pll_i += int(self.interp_sps + np.rint(pll_output*self.interp_sps))\n\
+      \n                output_items[0][int(self.pll_i/self.interp_sps)] = interp_signal[self.pll_i]\n\
+      \           \n            #Wrap self.pll_i for the next chunk of data\n    \
+      \        self.pll_i = self.pll_i % self.interp_sps + self.interp_sps\n     \
+      \   else:\n            output_items[0][:] = 0\n\n        return len(output_items[0])\n\
       \        \n\n"
     affinity: ''
     alias: ''
     bandwidth: '0.001688'
+    burst_tag_name: '''packet_len'''
     comment: ''
     damping_factor: '1'
     interpolation_factor: 2**4
@@ -389,8 +387,9 @@ blocks:
   states:
     _io_cache: ('Timing Error Detector', 'blk', [('interpolation_factor', '1'), ('sps',
       '2'), ('timing_error_detector', "'gardner'"), ('damping_factor', '1'), ('bandwidth',
-      '0.2')], [('0', 'complex', 1)], [('0', 'complex', 1)], 'Embedded Python Block
-      example - a simple multiply const', ['interpolation_factor', 'sps', 'timing_error_detector'])
+      '0.2'), ('burst_tag_name', "'rx_burst'")], [('0', 'complex', 1)], [('0', 'complex',
+      1)], 'Embedded Python Block example - a simple multiply const', ['interpolation_factor',
+      'sps', 'timing_error_detector'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -478,10 +477,10 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    xmax: '.05'
-    xmin: -.05
-    ymax: '.05'
-    ymin: -.05
+    xmax: '.005'
+    xmin: -.005
+    ymax: '.005'
+    ymin: -.005
   states:
     bus_sink: false
     bus_source: false
@@ -575,8 +574,8 @@ blocks:
     width8: '1'
     width9: '1'
     ylabel: Amplitude
-    ymax: '.002'
-    ymin: -.002
+    ymax: '.005'
+    ymin: -.005
     yunit: '""'
   states:
     bus_sink: false
@@ -671,8 +670,8 @@ blocks:
     width8: '1'
     width9: '1'
     ylabel: Amplitude
-    ymax: '.002'
-    ymin: -.002
+    ymax: '.005'
+    ymin: -.005
     yunit: '""'
   states:
     bus_sink: false
