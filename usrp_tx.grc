@@ -103,7 +103,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '"serial=30F5982"'
+    value: '"serial=31909E4"'
   states:
     bus_sink: false
     bus_source: false
@@ -380,7 +380,7 @@ blocks:
     interp: sps
     maxoutbuf: '0'
     minoutbuf: '0'
-    ntaps: '127'
+    ntaps: 32*sps-1
     samp_rate: samp_rate
     sym_rate: samp_rate/sps
     type: interp_fir_filter_ccf
@@ -702,7 +702,7 @@ connections:
 - [blocks_throttle2_0, '0', blocks_repeat_0, '0']
 - [blocks_throttle2_0, '0', blocks_tagged_stream_multiply_length_0, '0']
 - [epy_block_1, '0', root_raised_cosine_filter_0, '0']
-- [epy_block_2, Unpacked Packet, blocks_message_debug_0, print]
+- [epy_block_2, Unpacked Packet, blocks_message_debug_0, print_pdu]
 - [epy_block_2, Unpacked Packet, pdu_pdu_to_tagged_stream_0, pdus]
 - [pdu_pdu_to_tagged_stream_0, '0', virtual_sink_0, '0']
 - [qtgui_edit_box_msg_0, msg, blocks_message_strobe_0, set_msg]
@@ -713,4 +713,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
+  grc_version: 3.10.9.2

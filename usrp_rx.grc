@@ -78,7 +78,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '89.6'
-    value: '37'
+    value: '35'
     widget: counter_slider
   states:
     bus_sink: false
@@ -123,7 +123,7 @@ blocks:
     start: '-100'
     step: '1'
     stop: '100'
-    value: '-60'
+    value: '-50'
     widget: counter_slider
   states:
     bus_sink: false
@@ -151,7 +151,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/rf/Documents/BPSK/rx_raw_pll
+    file: rx_raw_pll
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -159,7 +159,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 608.0]
+    coordinate: [1296, 568.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0
@@ -169,7 +169,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/rf/Documents/BPSK/rx_raw_TED
+    file: rx_raw_TED
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -187,7 +187,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/rf/Documents/BPSK/rx_raw_rrc
+    file: rx_raw_rrc
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -457,20 +457,25 @@ blocks:
       \         #TODO Check if in Burst to reduce compute. I just check if chunk has\
       \ bust tagged data, but I should get the first one and then start there\n  \
       \      tagTuple = self.get_tags_in_window(0, 0, len(input_items[0]), self.tag_key)\n\
-      \        if(tagTuple):\n            #Do PLL through chunk\n            \n  \
-      \          for i, sample in enumerate(input_items[0]):\n                output_items[0][i]\
-      \ = sample*np.exp(-1j*self.phase_estimate)\n                error = output_items[0][i].real*output_items[0][i].imag\n\
-      \                self.error_integral += self.ki*error\n                self.phase_estimate\
-      \ += self.kp*error + self.error_integral\n                self.phase_estimate\
-      \ = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent pll_phase from getting\
-      \ too big\n                \n                \n        else:\n            output_items[0][:]\
-      \ = 0\n        return len(output_items[0])\n"
+      \        output_items[0][:] = 0\n        if(tagTuple):\n            first_valid_sample\
+      \ = tagTuple[0].offset - self.nitems_read(0)#I am assuming that the first tag\
+      \ is the first burst signal\n            #Do PLL through chunk\n           \
+      \ print(f\"1st Valid Sample {first_valid_sample}\")\n            for i, sample\
+      \ in enumerate(input_items[0][first_valid_sample:]):\n                if output_items[0][i].real\
+      \ != 0:\n                    output_items[0][i] = sample*np.exp(-1j*self.phase_estimate)\n\
+      \                    error = output_items[0][i].imag/output_items[0][i].real\n\
+      \                    self.error_integral += self.ki*error\n                \
+      \    self.phase_estimate += self.kp*error + self.error_integral\n          \
+      \          self.phase_estimate = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent\
+      \ pll_phase from getting too big\n            print(output_items[0][first_valid_sample+1])\n\
+      \            print(f\"Phase estimate: {self.phase_estimate}\")\n\n        return\
+      \ len(output_items[0])\n"
     affinity: ''
     alias: ''
     burst_tag_name: '''packet_len'''
     comment: ''
-    damping_factor: '2'
-    loop_bandwidth: '3'
+    damping_factor: '1'
+    loop_bandwidth: '.2'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -1264,7 +1269,7 @@ blocks:
     alpha: '0.51'
     comment: ''
     decim: '1'
-    gain: '2'
+    gain: '1'
     interp: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1454,7 +1459,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=30BC4A2"'
+    dev_addr: '"serial=31909E8"'
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1767,4 +1772,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
+  grc_version: 3.10.9.2
