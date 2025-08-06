@@ -78,7 +78,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '89.6'
-    value: '35'
+    value: '37'
     widget: counter_slider
   states:
     bus_sink: false
@@ -103,7 +103,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '8'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -123,7 +123,7 @@ blocks:
     start: '-100'
     step: '1'
     stop: '100'
-    value: '-50'
+    value: '-60'
     widget: counter_slider
   states:
     bus_sink: false
@@ -151,7 +151,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/user/Documents/locchanan-senior/BPSK/rx_raw_pll
+    file: /home/rf/Documents/BPSK/rx_raw_pll
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -169,7 +169,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/user/Documents/locchanan-senior/BPSK/rx_raw_TED
+    file: /home/rf/Documents/BPSK/rx_raw_TED
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -177,7 +177,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 736.0]
+    coordinate: [728, 692.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_sink_0_0_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /home/rf/Documents/BPSK/rx_raw_rrc
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 836.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_vector_0
@@ -397,7 +415,7 @@ blocks:
     burst_tag_name: '''packet_len'''
     comment: ''
     damping_factor: '1'
-    interpolation_factor: 2**4
+    interpolation_factor: 2**5
     maxoutbuf: '0'
     minoutbuf: '0'
     sps: sps
@@ -411,7 +429,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 604.0]
+    coordinate: [464, 604.0]
     rotation: 0
     state: enabled
 - name: epy_block_3
@@ -439,20 +457,20 @@ blocks:
       \         #TODO Check if in Burst to reduce compute. I just check if chunk has\
       \ bust tagged data, but I should get the first one and then start there\n  \
       \      tagTuple = self.get_tags_in_window(0, 0, len(input_items[0]), self.tag_key)\n\
-      \        if(tagTuple):\n            #Do PLL through chunk\n            i = 0\n\
-      \            for sample in input_items[0]:\n                error = sample.real*sample.imag\n\
+      \        if(tagTuple):\n            #Do PLL through chunk\n            \n  \
+      \          for i, sample in enumerate(input_items[0]):\n                output_items[0][i]\
+      \ = sample*np.exp(-1j*self.phase_estimate)\n                error = output_items[0][i].real*output_items[0][i].imag\n\
       \                self.error_integral += self.ki*error\n                self.phase_estimate\
       \ += self.kp*error + self.error_integral\n                self.phase_estimate\
       \ = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent pll_phase from getting\
-      \ too big\n                output_items[0][i] = sample*np.exp(-1j*self.phase_estimate)\n\
-      \                i += 1\n        else:\n            output_items[0][:] = 0\n\
-      \        return len(output_items[0])\n"
+      \ too big\n                \n                \n        else:\n            output_items[0][:]\
+      \ = 0\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     burst_tag_name: '''packet_len'''
     comment: ''
-    damping_factor: '1.5'
-    loop_bandwidth: '.9'
+    damping_factor: '2'
+    loop_bandwidth: '3'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -546,10 +564,10 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    xmax: '.005'
-    xmin: -.005
-    ymax: '.005'
-    ymin: -.005
+    xmax: '.01'
+    xmin: -.01
+    ymax: '.01'
+    ymin: -.01
   states:
     bus_sink: false
     bus_source: false
@@ -737,7 +755,7 @@ blocks:
     ylabel: Amplitude
     ymax: '.005'
     ymin: -.005
-    yunit: '""'
+    yunit: '"RRC Eye"'
   states:
     bus_sink: false
     bus_source: false
@@ -975,7 +993,7 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '""'
+    name: '"RRC Time"'
     nconnections: '1'
     size: 1024*5
     srate: samp_rate
@@ -1246,7 +1264,7 @@ blocks:
     alpha: '0.51'
     comment: ''
     decim: '1'
-    gain: '1'
+    gain: '2'
     interp: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1436,7 +1454,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=31909E8"'
+    dev_addr: '"serial=30BC4A2"'
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1738,6 +1756,7 @@ connections:
 - [epy_block_3, '0', blocks_file_sink_0, '0']
 - [epy_block_3, '0', qtgui_const_sink_x_0_0, '0']
 - [epy_block_3, '0', qtgui_time_sink_x_0_0, '0']
+- [root_raised_cosine_filter_0, '0', blocks_file_sink_0_0_0, '0']
 - [root_raised_cosine_filter_0, '0', epy_block_2, '0']
 - [root_raised_cosine_filter_0, '0', qtgui_eye_sink_x_0, '0']
 - [root_raised_cosine_filter_0, '0', qtgui_time_sink_x_0, '0']
@@ -1748,4 +1767,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.9.2
+  grc_version: 3.10.7.0
