@@ -460,10 +460,10 @@ blocks:
       \        output_items[0][:] = 0\n        if(tagTuple):\n            first_valid_sample\
       \ = tagTuple[0].offset - self.nitems_read(0)#I am assuming that the first tag\
       \ is the first burst signal\n            #Do PLL through chunk\n           \
-      \ print(f\"1st Valid Sample {first_valid_sample}\")\n            for i, sample\
-      \ in enumerate(input_items[0][first_valid_sample:]):\n                if output_items[0][i].real\
-      \ != 0:\n                    output_items[0][i] = sample*np.exp(-1j*self.phase_estimate)\n\
-      \                    error = output_items[0][i].imag/output_items[0][i].real\n\
+      \ print(f\"1st Valid Sample {first_valid_sample} Value: {pmt.to_python(tagTuple[0].value)}\"\
+      )\n            for i, sample in enumerate(input_items[0][first_valid_sample:]):\n\
+      \                if input_items[0][i].real != 0:\n                    output_items[0][i]\
+      \ = sample*np.exp(-1j*self.phase_estimate)\n                    error = output_items[0][i].imag/output_items[0][i].real\n\
       \                    self.error_integral += self.ki*error\n                \
       \    self.phase_estimate += self.kp*error + self.error_integral\n          \
       \          self.phase_estimate = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent\
@@ -1459,7 +1459,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=31909E8"'
+    dev_addr: '"serial=30F5982"'
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1772,4 +1772,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.9.2
+  grc_version: 3.10.7.0
