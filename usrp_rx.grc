@@ -63,7 +63,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 76.0]
+    coordinate: [168, 88.0]
     rotation: 0
     state: enabled
 - name: gain
@@ -87,11 +87,35 @@ blocks:
     coordinate: [400, 12.0]
     rotation: 0
     state: true
+- name: rx_device_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"serial=31909E8"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [648, 16.0]
+    rotation: 0
+    state: true
+- name: rx_device_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"serial=30F5982"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [648, 88.0]
+    rotation: 0
+    state: disabled
 - name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: 500e3
+    value: 1e6/2
   states:
     bus_sink: false
     bus_source: false
@@ -103,7 +127,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '4'
+    value: '10'
   states:
     bus_sink: false
     bus_source: false
@@ -198,6 +222,24 @@ blocks:
     coordinate: [400, 836.0]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0_0_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: rx_raw
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [776, 176.0]
+    rotation: 0
+    state: enabled
 - name: blocks_stream_to_vector_0
   id: blocks_stream_to_vector
   parameters:
@@ -288,7 +330,7 @@ blocks:
     alias: ''
     burst_tag_name: '"packet_len"'
     comment: ''
-    cutoff_freq: 1/(sps*4)
+    cutoff_freq: 10/(sps)
     maxoutbuf: '0'
     minoutbuf: '0'
     threshold_db: squelch_power
@@ -299,7 +341,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 300.0]
+    coordinate: [472, 304.0]
     rotation: 0
     state: enabled
 - name: epy_block_1
@@ -356,7 +398,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1112, 300.0]
+    coordinate: [1120, 296.0]
     rotation: 0
     state: enabled
 - name: epy_block_2
@@ -462,20 +504,20 @@ blocks:
       \ is the first burst signal\n            #Do PLL through chunk\n           \
       \ print(f\"1st Valid Sample {first_valid_sample} Value: {pmt.to_python(tagTuple[0].value)}\"\
       )\n            for i, sample in enumerate(input_items[0][first_valid_sample:]):\n\
-      \                if input_items[0][i].real != 0:\n                    output_items[0][i]\
+      \                if sample.real != 0:\n                    output_items[0][i]\
       \ = sample*np.exp(-1j*self.phase_estimate)\n                    error = output_items[0][i].imag/output_items[0][i].real\n\
       \                    self.error_integral += self.ki*error\n                \
       \    self.phase_estimate += self.kp*error + self.error_integral\n          \
       \          self.phase_estimate = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent\
-      \ pll_phase from getting too big\n            print(output_items[0][first_valid_sample+1])\n\
-      \            print(f\"Phase estimate: {self.phase_estimate}\")\n\n        return\
+      \ pll_phase from getting too big\n            #print(output_items[0][first_valid_sample+1])\n\
+      \            #print(f\"Phase estimate: {self.phase_estimate}\")\n\n        return\
       \ len(output_items[0])\n"
     affinity: ''
     alias: ''
     burst_tag_name: '''packet_len'''
     comment: ''
-    damping_factor: '1'
-    loop_bandwidth: '.2'
+    damping_factor: '1.2'
+    loop_bandwidth: '.06'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -519,7 +561,7 @@ blocks:
     bus_structure: null
     coordinate: [1224, 644.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: qtgui_const_sink_x_0
   id: qtgui_const_sink_x
   parameters:
@@ -609,7 +651,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 760.0]
+    coordinate: [704, 816.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0
@@ -815,7 +857,7 @@ blocks:
     alpha7: '1.0'
     alpha8: '1.0'
     alpha9: '1.0'
-    autoscale: 'False'
+    autoscale: 'True'
     axislabels: 'True'
     color1: cyan
     color10: blue
@@ -886,14 +928,14 @@ blocks:
     width8: '1'
     width9: '1'
     ylabel: Amplitude
-    ymax: '.005'
-    ymin: -.005
+    ymax: '.01'
+    ymin: -.01
     yunit: '""'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [544, 504.0]
+    coordinate: [688, 504.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -1491,7 +1533,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=30F5982"'
+    dev_addr: rx_device_addr
     dev_args: ''
     gain0: gain
     gain1: '0'
@@ -1798,6 +1840,7 @@ connections:
 - [root_raised_cosine_filter_0, '0', epy_block_2, '0']
 - [root_raised_cosine_filter_0, '0', qtgui_eye_sink_x_0, '0']
 - [root_raised_cosine_filter_0, '0', qtgui_time_sink_x_0, '0']
+- [uhd_usrp_source_0, '0', blocks_file_sink_0_0_1, '0']
 - [uhd_usrp_source_0, '0', epy_block_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_waterfall_sink_x_0, '0']
@@ -1805,4 +1848,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
+  grc_version: 3.10.9.2
