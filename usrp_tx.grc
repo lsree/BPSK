@@ -75,6 +75,18 @@ blocks:
     coordinate: [288, 8.0]
     rotation: 0
     state: true
+- name: rrc_ntaps
+  id: variable
+  parameters:
+    comment: ''
+    value: 2**7-1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [416, 80.0]
+    rotation: 0
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
@@ -137,14 +149,14 @@ blocks:
     append: 'False'
     comment: ''
     file: tx_bytes
-    type: byte
+    type: complex
     unbuffered: 'False'
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 704.0]
+    coordinate: [1144, 768.0]
     rotation: 0
     state: disabled
 - name: blocks_message_debug_0
@@ -194,7 +206,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 712.0]
+    coordinate: [264, 552.0]
     rotation: 0
     state: disabled
 - name: blocks_tag_debug_0
@@ -235,6 +247,27 @@ blocks:
     coordinate: [920, 552.0]
     rotation: 0
     state: enabled
+- name: digital_burst_shaper_xx_0
+  id: digital_burst_shaper_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    insert_phasing: 'False'
+    length_tag_name: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    post_padding: '0'
+    pre_padding: '0'
+    type: float
+    window: ([])
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 400.0]
+    rotation: 0
+    state: disabled
 - name: epy_block_1
   id: epy_block
   parameters:
@@ -244,72 +277,79 @@ blocks:
       \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
       from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
       \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
-      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, symbol_map=[-1+0j,\
+      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, symbol_dict=[-1+0j,\
       \ 1+0j]):  # only default arguments here\n        \"\"\"arguments to this function\
       \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
       \        self,\n            name='PSK Mod',   # will show up in GRC\n      \
       \      in_sig=[np.uint8],\n            out_sig=[np.complex64]\n        )\n \
       \       # if an attribute with the same name as a parameter is found,\n    \
-      \    # a callback is registered (properties work, too).\n        self.symbol_map\
-      \ = np.array(symbol_map)\n\n    def work(self, input_items, output_items):\n\
-      \        \"\"\"example: multiply with constant\"\"\"\n        output_items[0][:]\
-      \ = self.symbol_map[input_items[0]]\n        return len(output_items[0])\n"
+      \    # a callback is registered (properties work, too).\n        self.symbol_dict\
+      \ = symbol_dict #np.array(symbol_map)\n\n    def work(self, input_items, output_items):\n\
+      \        \"\"\"example: multiply with constant\"\"\"\n        for i,bit in enumerate(input_items[0]):\n\
+      \            output_items[0][i] = self.symbol_dict[bit]\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    symbol_map: '[-1+0j, 1+0j]'
+    symbol_dict: '{0:-1+0j, 1:1+0j, 0xFF:0}'
   states:
-    _io_cache: ('PSK Mod', 'blk', [('symbol_map', '[(-1+0j), (1+0j)]')], [('0', 'byte',
+    _io_cache: ('PSK Mod', 'blk', [('symbol_dict', '[(-1+0j), (1+0j)]')], [('0', 'byte',
       1)], [('0', 'complex', 1)], 'Embedded Python Block example - a simple multiply
-      const', ['symbol_map'])
+      const', ['symbol_dict'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 576.0]
+    coordinate: [440, 584.0]
     rotation: 0
     state: true
 - name: epy_block_2
   id: epy_block
   parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\nimport pmt\nimport queue\n\n\nclass blk(gr.sync_block):\
-      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
-      \"Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
-      \ preamble_len=12, syncword=\"1110010\"):  # only default arguments here\n \
-      \       \"\"\"arguments to this function show up as parameters in GRC\"\"\"\n\
-      \        gr.sync_block.__init__(\n            self,\n            name='Packetize',\
-      \   # will show up in GRC\n            in_sig= None,\n            out_sig= None\n\
-      \        )\n        \n        #Store Variables\n        self.preamble = np.array(int((preamble_len+1)/2)*[1,0],\
+    _source_code: "\"\"\"\nThis python block creates a PMT that contains a packet.\
+      \ The packet follows the following format:\n\n1. Preamble: Alternating 0s and\
+      \ 1s. The length of the preamble is determined by the Preamble_Len parameter\n\
+      2. Syncword: The bit string that the correlator is supposed to detect\n3. Len:\
+      \ A 1 byte field that describes the length of the payload\n4. Payload: The payload/message\
+      \ to be transmitted\n5. Pad: Amount to pad the message. This is to prevent the\
+      \ RRC from truncating the message. Pad value will be 0xFF. The modulator can\
+      \ decide how to handle this.\n\n| Preamble | Sync Word | Len | Payload | Pad\
+      \ |\n\n\"\"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport pmt\nimport\
+      \ queue\n\n\nclass blk(gr.sync_block):  # other base classes are basic_block,\
+      \ decim_block, interp_block\n    \"\"\"Embedded Python Block example - a simple\
+      \ multiply const\"\"\"\n\n    def __init__(self, preamble_len=12, syncword=\"\
+      1110010\", pad=127):  # only default arguments here\n        \"\"\"arguments\
+      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Packetize',   # will show up in GRC\n\
+      \            in_sig= None,\n            out_sig= None\n        )\n        \n\
+      \        #Store Variables\n        self.preamble = np.array(int((preamble_len+1)/2)*[1,0],\
       \ dtype=np.uint8)[:preamble_len]\n        self.syncword = np.array(list(syncword),\
-      \ dtype=np.uint8)\n        \n        #Make values are binary\n        if np.any(self.syncword\
-      \ > 1):\n        \tprint(np.any(self.syncword > 1))\n        \traise ValueError(\"\
-      Inavlid Syncword\")\n        \n        # Register port and handler\n       \
-      \ self.message_port_register_in(pmt.intern('MSG_In'))\n        self.message_port_register_out(pmt.intern('Unpacked\
-      \ Packet'))\n        self.set_msg_handler(pmt.intern('MSG_In'), self.handle_msg)\n\
-      \        \n        \n    def handle_msg(self, msg):\n        #Get msg\n    \
-      \    payload = pmt.to_python(msg)\n        \n        payload = np.fromstring(payload[1],\
+      \ dtype=np.uint8)\n        self.pad_amount = int(pad)\n        \n        #Make\
+      \ values are binary\n        if np.any(self.syncword > 1):\n        \tprint(np.any(self.syncword\
+      \ > 1))\n        \traise ValueError(\"Inavlid Syncword\")\n        \n      \
+      \  # Register port and handler\n        self.message_port_register_in(pmt.intern('MSG_In'))\n\
+      \        self.message_port_register_out(pmt.intern('Unpacked Packet'))\n   \
+      \     self.set_msg_handler(pmt.intern('MSG_In'), self.handle_msg)\n        \n\
+      \        \n    def handle_msg(self, msg):\n        #Get msg\n        payload\
+      \ = pmt.to_python(msg)\n        \n        payload = np.fromstring(payload[1],\
       \ dtype=np.uint8)\n        payload_len = np.array([len(payload)], dtype=np.uint8)\n\
       \        \n        \n        packet = np.concatenate((self.preamble, self.syncword,\
-      \ np.unpackbits(np.concatenate((payload_len, payload)), bitorder='big')))\n\
-      \        \n\n     \n        #Create PMT u8vector\n        pmt_out = pmt.cons(pmt.PMT_NIL,\
-      \ pmt.init_u8vector(len(packet), packet))\n        self.message_port_pub(pmt.intern('Unpacked\
+      \ np.unpackbits(np.concatenate((payload_len, payload)), bitorder='big'), np.full(self.pad_amount,\
+      \ 0xFF)))\n        \n\n     \n        #Create PMT u8vector\n        pmt_out\
+      \ = pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(packet), packet))\n        self.message_port_pub(pmt.intern('Unpacked\
       \ Packet'), pmt_out)\n"
     affinity: ''
     alias: ''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
+    pad: (rrc_ntaps+1)/2
     preamble_len: '56'
     syncword: '"1110010"'
   states:
-    _io_cache: ('Packetize', 'blk', [('preamble_len', '12'), ('syncword', "'1110010'")],
-      [('MSG_In', 'message', 1)], [('Unpacked Packet', 'message', 1)], 'Embedded Python
-      Block example - a simple multiply const', ['syncword'])
+    _io_cache: ('Packetize', 'blk', [('preamble_len', '12'), ('syncword', "'1110010'"),
+      ('pad', '127')], [('MSG_In', 'message', 1)], [('Unpacked Packet', 'message',
+      1)], 'Embedded Python Block example - a simple multiply const', ['syncword'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -493,7 +533,7 @@ blocks:
     interp: sps
     maxoutbuf: '0'
     minoutbuf: '0'
-    ntaps: '127'
+    ntaps: rrc_ntaps
     samp_rate: samp_rate
     sym_rate: samp_rate/sps
     type: interp_fir_filter_ccf
@@ -681,7 +721,7 @@ blocks:
     gain_type7: default
     gain_type8: default
     gain_type9: default
-    len_tag_name: '"tx_pkt_len"'
+    len_tag_name: tx_pkt_len
     lo_export0: 'False'
     lo_export1: 'False'
     lo_export10: 'False'
@@ -810,6 +850,7 @@ blocks:
 
 connections:
 - [blocks_message_strobe_0, strobe, epy_block_2, MSG_In]
+- [blocks_repeat_0, '0', epy_block_1, '0']
 - [blocks_tagged_stream_multiply_length_0, '0', blocks_tag_debug_0, '0']
 - [blocks_tagged_stream_multiply_length_0, '0', qtgui_sink_x_0, '0']
 - [blocks_tagged_stream_multiply_length_0, '0', qtgui_time_sink_x_0, '0']
@@ -819,7 +860,9 @@ connections:
 - [epy_block_2, Unpacked Packet, pdu_pdu_to_tagged_stream_0, pdus]
 - [pdu_pdu_to_tagged_stream_0, '0', virtual_sink_0, '0']
 - [qtgui_edit_box_msg_0, msg, blocks_message_strobe_0, set_msg]
+- [root_raised_cosine_filter_0, '0', blocks_file_sink_1, '0']
 - [root_raised_cosine_filter_0, '0', blocks_tagged_stream_multiply_length_0, '0']
+- [virtual_source_0, '0', blocks_repeat_0, '0']
 - [virtual_source_0, '0', epy_block_1, '0']
 
 metadata:
