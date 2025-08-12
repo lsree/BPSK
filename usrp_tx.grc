@@ -91,7 +91,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: int(500e3)
+    value: int(500e3/2)
   states:
     bus_sink: false
     bus_source: false
@@ -121,6 +121,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [416, 12.0]
+    rotation: 0
+    state: disabled
+- name: tx_device_addr
+  id: variable
+  parameters:
+    comment: ''
+    value: '"serial=30BC4A2"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 12.0]
     rotation: 0
     state: true
 - name: blocks_file_sink_0
@@ -867,4 +879,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.9.2
+  grc_version: 3.10.7.0

@@ -58,12 +58,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 2**13
+    value: 2**13+4096
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 88.0]
+    coordinate: [160, 92.0]
     rotation: 0
     state: enabled
 - name: gain
@@ -98,7 +98,7 @@ blocks:
     bus_structure: null
     coordinate: [648, 16.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: rx_device_addr
   id: variable
   parameters:
@@ -110,12 +110,12 @@ blocks:
     bus_structure: null
     coordinate: [648, 88.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: 1e6/2
+    value: 500e3
   states:
     bus_sink: false
     bus_source: false
@@ -127,7 +127,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '10'
+    value: 10*2
   states:
     bus_sink: false
     bus_source: false
@@ -165,7 +165,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 92.0]
+    coordinate: [72, 92.0]
+    rotation: 0
+    state: true
+- name: blocks_char_to_float_0
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 1052.0]
     rotation: 0
     state: true
 - name: blocks_file_sink_0
@@ -219,7 +236,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 836.0]
+    coordinate: [424, 756.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_1
@@ -240,6 +257,23 @@ blocks:
     coordinate: [712, 184.0]
     rotation: 0
     state: disabled
+- name: blocks_null_sink_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 936.0]
+    rotation: 0
+    state: true
 - name: blocks_stream_to_vector_0
   id: blocks_stream_to_vector
   parameters:
@@ -257,7 +291,7 @@ blocks:
     bus_structure: null
     coordinate: [928, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_tagged_stream_align_0
   id: blocks_tagged_stream_align
   parameters:
@@ -293,7 +327,7 @@ blocks:
     bus_structure: null
     coordinate: [1360, 320.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: epy_block_0
   id: epy_block
   parameters:
@@ -359,16 +393,16 @@ blocks:
       )\n\"\"\"\n\nimport numpy as np\nfrom scipy import signal, fft\nfrom gnuradio\
       \ import gr\nimport pmt\n\nclass blk(gr.sync_block):  # other base classes are\
       \ basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block example\
-      \ - a simple multiply const\"\"\"\n\n    def __init__(self, nfft=2**13, order=2,\
-      \ burst_tag_name = \"rx_burst\"):  # only default arguments here\n        \"\
-      \"\"arguments to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
-      \            self,\n            name='Coarse Frequency Correction',   # will\
-      \ show up in GRC\n            in_sig=[(np.complex64, nfft)],\n            out_sig=[(np.complex64,\
-      \ nfft)]\n        )\n        # if an attribute with the same name as a parameter\
-      \ is found,\n        # a callback is registered (properties work, too).\n  \
-      \      self.nfft = nfft\n        #self.set_output_multiple(nfft)\n        self.order\
-      \ = order\n        self.fft_freqs = fft.fftfreq(nfft)\n        self.time_vector\
-      \ = np.arange(0, nfft)/nfft\n        self.tag_key = pmt.intern(burst_tag_name)\n\
+      \ - a simple multiply const\"\"\"\n\n    def __init__(self, nfft=2**13+4096,\
+      \ order=2, burst_tag_name = \"rx_burst\"):  # only default arguments here\n\
+      \        \"\"\"arguments to this function show up as parameters in GRC\"\"\"\
+      \n        gr.sync_block.__init__(\n            self,\n            name='Coarse\
+      \ Frequency Correction',   # will show up in GRC\n            in_sig=[(np.complex64,\
+      \ nfft)],\n            out_sig=[(np.complex64, nfft)]\n        )\n        #\
+      \ if an attribute with the same name as a parameter is found,\n        # a callback\
+      \ is registered (properties work, too).\n        self.nfft = nfft\n        #self.set_output_multiple(nfft)\n\
+      \        self.order = order\n        self.fft_freqs = fft.fftfreq(nfft)\n  \
+      \      self.time_vector = np.arange(0, nfft)/nfft\n        self.tag_key = pmt.intern(burst_tag_name)\n\
       \n        \n    #def general_work(self, input_items, output_items):\n    def\
       \ work(self, input_items, output_items):\n        input_vectors = input_items[0]\n\
       \        \n        #Check if correct tag is present\n        tagTuple = self.get_tags_in_window(0,\
@@ -391,16 +425,16 @@ blocks:
     nfft: coarse_freq_fft_size
     order: '2'
   states:
-    _io_cache: ('Coarse Frequency Correction', 'blk', [('nfft', '8192'), ('order',
-      '2'), ('burst_tag_name', "'rx_burst'")], [('0', 'complex', 8192)], [('0', 'complex',
-      8192)], 'Embedded Python Block example - a simple multiply const', ['nfft',
+    _io_cache: ('Coarse Frequency Correction', 'blk', [('nfft', '12288'), ('order',
+      '2'), ('burst_tag_name', "'rx_burst'")], [('0', 'complex', 12288)], [('0', 'complex',
+      12288)], 'Embedded Python Block example - a simple multiply const', ['nfft',
       'order'])
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [1120, 296.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: epy_block_2
   id: epy_block
   parameters:
@@ -440,18 +474,18 @@ blocks:
       \ if in Burst to reduce compute. I just check if chunk has bust tagged data,\
       \ but I should get the first one and then start there\n        tagTuple = self.get_tags_in_window(0,\
       \ 0, len(input_items[0]), self.tag_key)\n        if(tagTuple):\n           \
-      \ print(f\"Tag Tuple Len: {len(tagTuple)}\")\n            #Interpolate\n   \
-      \         interp_signal = signal.resample_poly(input_items[0], self.interpolation_factor,\
+      \ #print(f\"Tag Tuple Len: {len(tagTuple)}\")\n            #Interpolate\n  \
+      \          interp_signal = signal.resample_poly(input_items[0], self.interpolation_factor,\
       \ 1)\n            #Implement PLL\n            pll_start = self.pll_i\n     \
       \       while self.pll_i < len(interp_signal) - self.interp_sps:\n         \
       \       error = self.timing_error_detector(interp_signal, self.pll_i, self.interp_sps)\n\
       \                self.error_integral += self.ki*error\n                pll_output\
       \ = self.kp*error + self.error_integral\n                self.pll_i += int(self.interp_sps\
       \ + np.rint(pll_output*self.interp_sps))\n\n                output_items[0][int(self.pll_i/self.interp_sps)]\
-      \ = interp_signal[self.pll_i]\n            print(f\"Samples Iterated Thru: {self.pll_i\
-      \ - pll_start}\")\n            #Wrap self.pll_i for the next chunk of data\n\
-      \            self.pll_i = self.pll_i % self.interp_sps + self.interp_sps\n \
-      \       else:\n            output_items[0][:] = 0\n\n        return len(output_items[0])\n\
+      \ = interp_signal[self.pll_i]\n            #print(f\"Samples Iterated Thru:\
+      \ {self.pll_i - pll_start}\")\n            #Wrap self.pll_i for the next chunk\
+      \ of data\n            self.pll_i = self.pll_i % self.interp_sps + self.interp_sps\n\
+      \        else:\n            output_items[0][:] = 0\n\n        return len(output_items[0])\n\
       \        \n\n"
     affinity: ''
     alias: ''
@@ -500,26 +534,26 @@ blocks:
       \       self.phase_estimate = 0\n\n    def work(self, input_items, output_items):\n\
       \         #TODO Check if in Burst to reduce compute. I just check if chunk has\
       \ bust tagged data, but I should get the first one and then start there\n  \
-      \      tagTuple = self.get_tags_in_window(0, 0, len(input_items[0]), self.tag_key)\n\
-      \        output_items[0][:] = 0\n        if(tagTuple):\n            first_valid_sample\
+      \      #tagTuple = self.get_tags_in_window(0, 0, len(input_items[0]), self.tag_key)\n\
+      \        output_items[0][:] = 0\n        #if(tagTuple):\n            #first_valid_sample\
       \ = tagTuple[0].offset - self.nitems_read(0)#I am assuming that the first tag\
       \ is the first burst signal\n            #Do PLL through chunk\n           \
       \ #print(f\"1st Valid Sample {first_valid_sample} Value: {pmt.to_python(tagTuple[0].value)}\"\
-      )\n            for i, sample in enumerate(input_items[0][first_valid_sample:]):\n\
-      \                if sample.real != 0:\n                    output_items[0][i]\
-      \ = sample*np.exp(-1j*self.phase_estimate)\n                    error = output_items[0][i].imag/output_items[0][i].real\n\
-      \                    self.error_integral += self.ki*error\n                \
-      \    self.phase_estimate += self.kp*error + self.error_integral\n          \
-      \          self.phase_estimate = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent\
-      \ pll_phase from getting too big\n            #print(output_items[0][first_valid_sample+1])\n\
-      \            #print(f\"Phase estimate: {self.phase_estimate}\")\n\n        return\
-      \ len(output_items[0])\n"
+      )\n            #for i, sample in enumerate(input_items[0][first_valid_sample:]):\n\
+      \        for i, sample in enumerate(input_items[0]):\n            if sample.real\
+      \ != 0:\n                output_items[0][i] = sample*np.exp(-1j*self.phase_estimate)\n\
+      \                error = output_items[0][i].imag/output_items[0][i].real\n \
+      \               self.error_integral += self.ki*error\n                self.phase_estimate\
+      \ += self.kp*error + self.error_integral\n                self.phase_estimate\
+      \ = np.fmod(self.phase_estimate, 2*np.pi)    #Prevent pll_phase from getting\
+      \ too big\n        #print(output_items[0][first_valid_sample+1])\n        #print(f\"\
+      Phase estimate: {self.phase_estimate}\")\n\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     burst_tag_name: '''packet_len'''
     comment: ''
     damping_factor: '1.2'
-    loop_bandwidth: '.06'
+    loop_bandwidth: '.09'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -548,8 +582,8 @@ blocks:
       \            out_sig=[np.uint8]\n        )\n        # if an attribute with the\
       \ same name as a parameter is found,\n        # a callback is registered (properties\
       \ work, too).\n\n    def work(self, input_items, output_items):\n        \"\"\
-      \"example: multiply with constant\"\"\"\n        output_items[0][:] = (input_items[0]>1)*1\n\
-      \        return len(output_items[0])\n"
+      \"example: multiply with constant\"\"\"\n        #print((input_items[0]>1)*1)\n\
+      \        output_items[0][:] = (input_items[0].real>0)*1\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
@@ -561,9 +595,58 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1224, 644.0]
+    coordinate: [1224, 640.0]
     rotation: 0
-    state: disabled
+    state: enabled
+- name: epy_block_5
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\ntag_name Locates where the packet\
+      \ starts and it's value stores if it needs to be inverted\n    False: Does not\
+      \ need to be inverted\n    True: Needs to be inverted\n\"\"\"\n\nimport numpy\
+      \ as np\nfrom gnuradio import gr\nimport pmt\n\nclass blk(gr.sync_block):  #\
+      \ other base classes are basic_block, decim_block, interp_block\n    \"\"\"\
+      Embedded Python Block example - a simple multiply const\"\"\"\n\n    def __init__(self,\
+      \ syncword=\"10101110010\", tag_name=\"pkt_start_invert\"):  # only default\
+      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
+      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
+      \     name='Correlate Syncword',   # will show up in GRC\n            in_sig=[np.uint8],\n\
+      \            out_sig=[np.uint8]\n        )\n        # if an attribute with the\
+      \ same name as a parameter is found,\n        # a callback is registered (properties\
+      \ work, too).\n        self.len_mask = 2**len(syncword)-1  #This is to prevent\
+      \ the correlator from comparing numbers greater than the syncword\n        self.syncword\
+      \ = int(syncword,2)\n        self.syncword_inv = self.syncword ^ self.len_mask\n\
+      \     \n        self.packed_bits = 0\n        self.tag_name = pmt.intern(tag_name)\n\
+      \n    def work(self, input_items, output_items):\n        \"\"\"example: multiply\
+      \ with constant\"\"\"\n        for i, bit in enumerate(input_items[0]):\n  \
+      \          #print(f\"In loop {i}\")\n            #Shift new bit in\n       \
+      \     self.packed_bits = (self.packed_bits << 1) | (bit & 1)\n            self.packed_bits\
+      \ &= self.len_mask\n\n            #Check correlation\n            #Normal/Non-inverted\n\
+      \            correlated = self.packed_bits ^ self.syncword\n            if correlated.bit_count()\
+      \ == 0:\n                #Add Tag\n                print(f\"PKT Len {np.packbits(input_items[0][i+1:i+9])}\"\
+      )\n                self.add_item_tag(0, self.nitems_written(0) + i + 1, self.tag_name,\
+      \ pmt.PMT_F)\n                \n            #Check Inverted\n            correlated_inv\
+      \ = self.packed_bits ^ self.syncword_inv\n            if correlated_inv.bit_count()\
+      \ == 0:\n                #Add Tag\n                print(f\"PKT Len INV {np.packbits(~input_items[0][i+1:i+9])}\"\
+      )\n                self.add_item_tag(0, self.nitems_written(0) + i + 1, self.tag_name,\
+      \ pmt.PMT_T)\n        output_items[0][:] = input_items[0]\n        return len(output_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    syncword: '"10101110010"'
+    tag_name: '"pkt_start_invert"'
+  states:
+    _io_cache: ('Correlate Syncword', 'blk', [('syncword', "'10101110010'"), ('tag_name',
+      "'pkt_start_invert'")], [('0', 'byte', 1)], [('0', 'byte', 1)], 'Embedded Python
+      Block example - a simple multiply const', ['syncword', 'tag_name'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 916.0]
+    rotation: 0
+    state: enabled
 - name: qtgui_const_sink_x_0
   id: qtgui_const_sink_x
   parameters:
@@ -653,7 +736,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 816.0]
+    coordinate: [728, 780.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0
@@ -1312,6 +1395,103 @@ blocks:
     coordinate: [872, 488.0]
     rotation: 0
     state: enabled
+- name: qtgui_time_sink_x_1
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Demoded"'
+    nconnections: '1'
+    size: '1024'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_AUTO
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 1036.0]
+    rotation: 0
+    state: true
 - name: qtgui_waterfall_sink_x_0
   id: qtgui_waterfall_sink_x
   parameters:
@@ -1906,6 +2086,19 @@ blocks:
     coordinate: [1592, 316.0]
     rotation: 0
     state: enabled
+- name: virtual_sink_1
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: bits
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1384, 636.0]
+    rotation: 0
+    state: true
 - name: virtual_source_0
   id: virtual_source
   parameters:
@@ -1919,10 +2112,25 @@ blocks:
     coordinate: [8, 616.0]
     rotation: 0
     state: enabled
+- name: virtual_source_1
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: bits
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 932.0]
+    rotation: 0
+    state: true
 
 connections:
+- [blocks_char_to_float_0, '0', qtgui_time_sink_x_1, '0']
 - [blocks_stream_to_vector_0, '0', epy_block_1, '0']
 - [blocks_tagged_stream_align_0, '0', blocks_stream_to_vector_0, '0']
+- [blocks_tagged_stream_align_0, '0', virtual_sink_0, '0']
 - [blocks_vector_to_stream_0, '0', virtual_sink_0, '0']
 - [epy_block_0, '0', blocks_tagged_stream_align_0, '0']
 - [epy_block_0, '0', qtgui_waterfall_sink_x_0_0, '0']
@@ -1936,6 +2144,9 @@ connections:
 - [epy_block_3, '0', epy_block_4, '0']
 - [epy_block_3, '0', qtgui_const_sink_x_0_0, '0']
 - [epy_block_3, '0', qtgui_time_sink_x_0_0, '0']
+- [epy_block_4, '0', virtual_sink_1, '0']
+- [epy_block_5, '0', blocks_char_to_float_0, '0']
+- [epy_block_5, '0', blocks_null_sink_0, '0']
 - [root_raised_cosine_filter_0, '0', blocks_file_sink_0_0_0, '0']
 - [root_raised_cosine_filter_0, '0', epy_block_2, '0']
 - [root_raised_cosine_filter_0, '0', qtgui_eye_sink_x_0, '0']
@@ -1945,7 +2156,8 @@ connections:
 - [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 - [virtual_source_0, '0', root_raised_cosine_filter_0, '0']
+- [virtual_source_1, '0', epy_block_5, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.9.2
+  grc_version: 3.10.7.0
