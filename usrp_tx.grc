@@ -345,10 +345,10 @@ blocks:
       \        \n    def handle_msg(self, msg):\n        #Get msg\n        payload\
       \ = pmt.to_python(msg)\n        \n        payload = np.fromstring(payload[1],\
       \ dtype=np.uint8)\n        payload_len = np.array([len(payload)], dtype=np.uint8)\n\
-      \        \n        \n        packet = np.concatenate((self.preamble, self.syncword,\
-      \ np.unpackbits(np.concatenate((payload_len, payload)), bitorder='big'), np.full(self.pad_amount,\
-      \ 0xFF)))\n        \n\n     \n        #Create PMT u8vector\n        pmt_out\
-      \ = pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(packet), packet))\n        self.message_port_pub(pmt.intern('Unpacked\
+      \        \n        packet = np.concatenate((self.preamble, self.syncword, np.unpackbits(np.concatenate((payload_len,\
+      \ payload)), bitorder='big'), np.full(self.pad_amount, 0xFF)))\n        \n\n\
+      \     \n        #Create PMT u8vector\n        pmt_out = pmt.cons(pmt.PMT_NIL,\
+      \ pmt.init_u8vector(len(packet), packet))\n        self.message_port_pub(pmt.intern('Unpacked\
       \ Packet'), pmt_out)\n"
     affinity: ''
     alias: ''
@@ -861,6 +861,7 @@ blocks:
     state: enabled
 
 connections:
+- [blocks_message_strobe_0, strobe, blocks_message_debug_0, print]
 - [blocks_message_strobe_0, strobe, epy_block_2, MSG_In]
 - [blocks_repeat_0, '0', epy_block_1, '0']
 - [blocks_tagged_stream_multiply_length_0, '0', blocks_tag_debug_0, '0']
@@ -868,7 +869,6 @@ connections:
 - [blocks_tagged_stream_multiply_length_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_tagged_stream_multiply_length_0, '0', uhd_usrp_sink_0_0, '0']
 - [epy_block_1, '0', root_raised_cosine_filter_0, '0']
-- [epy_block_2, Unpacked Packet, blocks_message_debug_0, print_pdu]
 - [epy_block_2, Unpacked Packet, pdu_pdu_to_tagged_stream_0, pdus]
 - [pdu_pdu_to_tagged_stream_0, '0', virtual_sink_0, '0']
 - [qtgui_edit_box_msg_0, msg, blocks_message_strobe_0, set_msg]

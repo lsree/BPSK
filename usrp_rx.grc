@@ -257,6 +257,21 @@ blocks:
     coordinate: [712, 184.0]
     rotation: 0
     state: disabled
+- name: blocks_message_debug_0
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    en_uvec: 'True'
+    log_level: info
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [992, 912.0]
+    rotation: 0
+    state: enabled
 - name: blocks_null_sink_0
   id: blocks_null_sink
   parameters:
@@ -271,7 +286,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [448, 936.0]
+    coordinate: [568, 880.0]
     rotation: 0
     state: true
 - name: blocks_stream_to_vector_0
@@ -328,6 +343,22 @@ blocks:
     coordinate: [1360, 320.0]
     rotation: 0
     state: disabled
+- name: digital_packet_headerparser_b_0
+  id: digital_packet_headerparser_b
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    header_formatter: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 760.0]
+    rotation: 0
+    state: disabled
 - name: epy_block_0
   id: epy_block
   parameters:
@@ -350,16 +381,16 @@ blocks:
       \ (properties work, too).\n        self.threshold = 10**(threshold_db/10)\n\
       \        self.alpha = cutoff_freq/(1+cutoff_freq)\n        self.prev_filt =\
       \ 0  #Save previous value of the filter\n        self.tag_key = pmt.intern(burst_tag_name)\n\
-      \n\n    def work(self, input_items, output_items):\n        \"\"\"example: multiply\
-      \ with constant\"\"\"\n        input_samp = input_items[0]\n        mag2 = input_samp\
-      \ * np.conj(input_samp)\n        \n        output = np.zeros(len(input_samp),\
-      \ dtype=complex) #Squelched by default\n        # Apply Filter\n        for\
-      \ i in range(0, len(mag2)):\n            self.prev_filt = self.alpha*mag2[i]\
-      \ + (1-self.alpha)*self.prev_filt \n            \n            if (self.prev_filt\
-      \ >= self.threshold):\n                self.add_item_tag(0, self.nitems_written(0)\
-      \ + i, self.tag_key, \n                    pmt.PMT_T)\n                output[i]\
-      \ = input_samp[i]\n\n                \n        output_items[0][:] = output\n\
-      \        return len(output_items[0])\n"
+      \        self.message_port_register_out(pmt.intern('Packet'))\n\n\n    def work(self,\
+      \ input_items, output_items):\n        \"\"\"example: multiply with constant\"\
+      \"\"\n        input_samp = input_items[0]\n        mag2 = input_samp * np.conj(input_samp)\n\
+      \        \n        output = np.zeros(len(input_samp), dtype=complex) #Squelched\
+      \ by default\n        # Apply Filter\n        for i in range(0, len(mag2)):\n\
+      \            self.prev_filt = self.alpha*mag2[i] + (1-self.alpha)*self.prev_filt\
+      \ \n            \n            if (self.prev_filt >= self.threshold):\n     \
+      \           self.add_item_tag(0, self.nitems_written(0) + i, self.tag_key, \n\
+      \                    pmt.PMT_T)\n                output[i] = input_samp[i]\n\
+      \n                \n        output_items[0][:] = output\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     burst_tag_name: '"packet_len"'
@@ -371,7 +402,8 @@ blocks:
   states:
     _io_cache: ('Burst Detect & Squelch', 'blk', [('threshold_db', '-65'), ('cutoff_freq',
       '0.01'), ('burst_tag_name', "'rx_burst'")], [('0', 'complex', 1)], [('0', 'complex',
-      1)], 'Embedded Python Block example - a simple multiply const', [])
+      1), ('Packet', 'message', 1)], 'Embedded Python Block example - a simple multiply
+      const', [])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -553,7 +585,7 @@ blocks:
     burst_tag_name: '''packet_len'''
     comment: ''
     damping_factor: '1.2'
-    loop_bandwidth: '.09'
+    loop_bandwidth: '.2'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -623,12 +655,11 @@ blocks:
       \     self.packed_bits = (self.packed_bits << 1) | (bit & 1)\n            self.packed_bits\
       \ &= self.len_mask\n\n            #Check correlation\n            #Normal/Non-inverted\n\
       \            correlated = self.packed_bits ^ self.syncword\n            if correlated.bit_count()\
-      \ == 0:\n                #Add Tag\n                print(f\"PKT Len {np.packbits(input_items[0][i+1:i+9])}\"\
-      )\n                self.add_item_tag(0, self.nitems_written(0) + i + 1, self.tag_name,\
-      \ pmt.PMT_F)\n                \n            #Check Inverted\n            correlated_inv\
-      \ = self.packed_bits ^ self.syncword_inv\n            if correlated_inv.bit_count()\
-      \ == 0:\n                #Add Tag\n                print(f\"PKT Len INV {np.packbits(~input_items[0][i+1:i+9])}\"\
-      )\n                self.add_item_tag(0, self.nitems_written(0) + i + 1, self.tag_name,\
+      \ == 0:\n                #Add Tag\n                self.add_item_tag(0, self.nitems_written(0)\
+      \ + i + 1, self.tag_name, pmt.PMT_F)\n                \n            #Check Inverted\n\
+      \            correlated_inv = self.packed_bits ^ self.syncword_inv\n       \
+      \     if correlated_inv.bit_count() == 0:\n                #Add Tag\n      \
+      \          self.add_item_tag(0, self.nitems_written(0) + i + 1, self.tag_name,\
       \ pmt.PMT_T)\n        output_items[0][:] = input_items[0]\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
@@ -647,6 +678,80 @@ blocks:
     coordinate: [200, 916.0]
     rotation: 0
     state: enabled
+- name: epy_block_6
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\nimport pmt\n\nclass blk(gr.sync_block):  # other base\
+      \ classes are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python\
+      \ Block example - a simple multiply const\"\"\"\n\n    def __init__(self, tag_name=\"\
+      pkt_start\"):  # only default arguments here\n        \"\"\"arguments to this\
+      \ function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Parse Header',   # will show up in GRC\n\
+      \            in_sig=[np.uint8],\n            out_sig=None\n        )\n     \
+      \   # if an attribute with the same name as a parameter is found,\n        #\
+      \ a callback is registered (properties work, too).\n        self.state = \"\
+      Scanning\"\n        self.len_bit_stream = np.empty(0, dtype=np.uint8)\n    \
+      \    self.tag_name = pmt.intern(tag_name)\n        self.invert = False\n   \
+      \     \n        self.msg_len = 0\n        self.msg_len_bitstream = np.empty(0,\
+      \ dtype=np.uint8)\n        \n        self.msg_bitstream = np.empty(0, dtype=np.uint8)\n\
+      \        self.message_port_register_out(pmt.intern('Packet'))\n        \n\n\
+      \    def work(self, input_items, output_items):\n       \n        i = 0\n  \
+      \      while i < len(input_items[0]):\n            if self.state == \"Scanning\"\
+      :\n                i = self.scanning(input_items[0], i)\n            elif self.state\
+      \ == \"Get Len\":\n                i = self.get_len(input_items[0], i)\n   \
+      \         elif self.state == \"Get MSG\":\n                i = self.get_msg(input_items[0],\
+      \ i)\n            else:\n                print(f\"Unknown state: {self.state}\"\
+      )\n                self.state = \"Scanning\"\n        return len(input_items[0])\n\
+      \        \n    def scanning(self, input_items, index):\n        ''' This function\
+      \ returns the relative position of the first available tag where the correlator\n\
+      \        '''\n        #Get tags\n        tags = self.get_tags_in_window(0, index,\
+      \ len(input_items), self.tag_name)\n        if tags:\n            self.state\
+      \ = \"Get Len\"\n            self.invert = pmt.to_python(tags[0].value)\n  \
+      \          return tags[0].offset - self.nitems_read(0) #Return relative offset\n\
+      \        else: #No tag found advance loop to next chunk\n            return\
+      \ len(input_items)\n            \n    def get_len(self, input_items, i):\n \
+      \       #Get 8 bits for len\n        #Deal with edge case where there's not\
+      \ enough samples to constitute the len field\n        if len(input_items[i:])\
+      \ < 8 - len(self.msg_len_bitstream):\n            self.msg_len_bitstream = np.concatenate([self.msg_bitstream,\
+      \ input_items[i:]])\n            return i + len(input_items)\n        \n   \
+      \     #There are 8 bits\n        self.msg_len_bitstream = np.concatenate([self.msg_len_bitstream,\
+      \ input_items[i:i+8-len(self.msg_len_bitstream)]])\n        self.msg_len = np.packbits(self.msg_len_bitstream)[0]\n\
+      \        #Check for inversion\n        if self.invert:\n            self.msg_len\
+      \ ^= 0xFF\n            \n        #Change state & Reset\n        self.msg_len_bitstream\
+      \ = np.empty(0, dtype=np.uint8)\n        self.state = \"Get MSG\"\n        \n\
+      \        return i+8\n        \n    def get_msg(self, input_items, i):\n    \
+      \    #Deal w/ edge case where there not enough samples to constitute the entire\
+      \ msg\n        if (len(input_items[i:]) < self.msg_len*8 - len(self.msg_bitstream)):\n\
+      \            self.msg_bitstream = np.concatenate([self.msg_bitstream, input_items[i:]])\n\
+      \            return i + len(input_items[i:])\n            \n        #There are\
+      \ enough samples\n        num_bits_read = self.msg_len*8-len(self.msg_bitstream)\n\
+      \        msg = np.concatenate([self.msg_bitstream, input_items[i:i+num_bits_read]])\n\
+      \        msg = np.packbits(msg)\n        if self.invert:\n            msg =\
+      \ ~msg\n        \n        pmt_out = pmt.cons(pmt.intern(\"MSG\"), pmt.to_pmt(msg))\n\
+      \        self.message_port_pub(pmt.intern('Packet'), pmt_out)\n        \n  \
+      \      #Change state and reset\n        self.state = \"Scanning\"\n        msg_len\
+      \ = self.msg_len\n        self.msg_len = 0\n        self.msg_bitstream = np.empty(0,\
+      \ dtype=np.uint8)\n        return i + num_bits_read\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag_name: '"pkt_start_invert"'
+  states:
+    _io_cache: ('Parse Header', 'blk', [('tag_name', "'pkt_start'")], [('0', 'byte',
+      1)], [('Packet', 'message', 1)], 'Embedded Python Block example - a simple multiply
+      const', ['tag_name'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [504, 940.0]
+    rotation: 0
+    state: true
 - name: qtgui_const_sink_x_0
   id: qtgui_const_sink_x
   parameters:
@@ -2147,6 +2252,8 @@ connections:
 - [epy_block_4, '0', virtual_sink_1, '0']
 - [epy_block_5, '0', blocks_char_to_float_0, '0']
 - [epy_block_5, '0', blocks_null_sink_0, '0']
+- [epy_block_5, '0', epy_block_6, '0']
+- [epy_block_6, Packet, blocks_message_debug_0, print]
 - [root_raised_cosine_filter_0, '0', blocks_file_sink_0_0_0, '0']
 - [root_raised_cosine_filter_0, '0', epy_block_2, '0']
 - [root_raised_cosine_filter_0, '0', qtgui_eye_sink_x_0, '0']
