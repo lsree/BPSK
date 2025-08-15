@@ -1,0 +1,483 @@
+options:
+  parameters:
+    author: ''
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: hb_qt_gui
+    hier_block_src_path: '.:'
+    id: bpsk_mod
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: BPSK Modulate
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: blocks_file_sink_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: tx_bytes
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 772.0]
+    rotation: 0
+    state: disabled
+- name: blocks_tagged_stream_multiply_length_0
+  id: blocks_tagged_stream_multiply_length
+  parameters:
+    affinity: ''
+    alias: ''
+    c: sps
+    comment: ''
+    lengthtagname: '"tx_pkt_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 592.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_1
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
+      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
+      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, symbol_dict=[-1+0j,\
+      \ 1+0j]):  # only default arguments here\n        \"\"\"arguments to this function\
+      \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
+      \        self,\n            name='PSK Mod',   # will show up in GRC\n      \
+      \      in_sig=[np.uint8],\n            out_sig=[np.complex64]\n        )\n \
+      \       # if an attribute with the same name as a parameter is found,\n    \
+      \    # a callback is registered (properties work, too).\n        self.symbol_dict\
+      \ = symbol_dict #np.array(symbol_map)\n\n    def work(self, input_items, output_items):\n\
+      \        \"\"\"example: multiply with constant\"\"\"\n        for i,bit in enumerate(input_items[0]):\n\
+      \            output_items[0][i] = self.symbol_dict[bit]\n        return len(output_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    symbol_dict: '{0:-1+0j, 1:1+0j, 0xFF:0}'
+  states:
+    _io_cache: ('PSK Mod', 'blk', [('symbol_dict', '[(-1+0j), (1+0j)]')], [('0', 'byte',
+      1)], [('0', 'complex', 1)], 'Embedded Python Block example - a simple multiply
+      const', ['symbol_dict'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 588.0]
+    rotation: 0
+    state: true
+- name: epy_block_2
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nThis python block creates a PMT that contains a packet.\
+      \ The packet follows the following format:\n\n1. Preamble: Alternating 0s and\
+      \ 1s. The length of the preamble is determined by the Preamble_Len parameter\n\
+      2. Syncword: The bit string that the correlator is supposed to detect\n3. Len:\
+      \ A 1 byte field that describes the length of the payload\n4. Payload: The payload/message\
+      \ to be transmitted\n5. Pad: Amount to pad the message. This is to prevent the\
+      \ RRC from truncating the message. Pad value will be 0xFF. The modulator can\
+      \ decide how to handle this.\n\n| Preamble | Sync Word | Len | Payload | Pad\
+      \ |\n\n\"\"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport pmt\nimport\
+      \ queue\n\n\nclass blk(gr.sync_block):  # other base classes are basic_block,\
+      \ decim_block, interp_block\n    \"\"\"Embedded Python Block example - a simple\
+      \ multiply const\"\"\"\n\n    def __init__(self, preamble_len=12, syncword=\"\
+      1110010\", pad=127):  # only default arguments here\n        \"\"\"arguments\
+      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Packetize',   # will show up in GRC\n\
+      \            in_sig= None,\n            out_sig= None\n        )\n        \n\
+      \        #Store Variables\n        self.preamble = np.array(int((preamble_len+1)/2)*[1,0],\
+      \ dtype=np.uint8)[:preamble_len]\n        self.syncword = np.array(list(syncword),\
+      \ dtype=np.uint8)\n        self.pad_amount = int(pad)\n        \n        #Make\
+      \ values are binary\n        if np.any(self.syncword > 1):\n        \tprint(np.any(self.syncword\
+      \ > 1))\n        \traise ValueError(\"Inavlid Syncword\")\n        \n      \
+      \  # Register port and handler\n        self.message_port_register_in(pmt.intern('MSG_In'))\n\
+      \        self.message_port_register_out(pmt.intern('Unpacked Packet'))\n   \
+      \     self.set_msg_handler(pmt.intern('MSG_In'), self.handle_msg)\n        \n\
+      \        \n    def handle_msg(self, msg):\n        #Get msg\n        payload\
+      \ = pmt.to_python(msg)\n        \n        payload = np.fromstring(payload[1],\
+      \ dtype=np.uint8)\n        payload_len = np.array([len(payload)], dtype=np.uint8)\n\
+      \        \n        packet = np.concatenate((self.preamble, self.syncword, np.unpackbits(np.concatenate((payload_len,\
+      \ payload)), bitorder='big'), np.full(self.pad_amount, 0xFF)))\n        \n\n\
+      \     \n        #Create PMT u8vector\n        pmt_out = pmt.cons(pmt.PMT_NIL,\
+      \ pmt.init_u8vector(len(packet), packet))\n        self.message_port_pub(pmt.intern('Unpacked\
+      \ Packet'), pmt_out)\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pad: (rrc_ntaps+1)/2
+    preamble_len: '56'
+    syncword: '"1110010"'
+  states:
+    _io_cache: ('Packetize', 'blk', [('preamble_len', '12'), ('syncword', "'1110010'"),
+      ('pad', '127')], [('MSG_In', 'message', 1)], [('Unpacked Packet', 'message',
+      1)], 'Embedded Python Block example - a simple multiply const', ['syncword'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 284.0]
+    rotation: 0
+    state: enabled
+- name: import_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: from PyQt5 import Qt
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [496, 4.0]
+    rotation: 0
+    state: true
+- name: import_0_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: from gnuradio import qtgui
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [496, 52.0]
+    rotation: 0
+    state: true
+- name: pad_sink_0
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: out
+    num_streams: '1'
+    optional: 'False'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1320, 604.0]
+    rotation: 0
+    state: true
+- name: pad_source_0
+  id: pad_source
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: in
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_streams: '1'
+    optional: 'False'
+    type: message
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [160, 300.0]
+    rotation: 0
+    state: true
+- name: pdu_pdu_to_tagged_stream_0
+  id: pdu_pdu_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: '"tx_pkt_len"'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 300.0]
+    rotation: 0
+    state: true
+- name: qtgui_sink_x_0
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: samp_rate
+    comment: ''
+    fc: '0'
+    fftsize: '1024'
+    gui_hint: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '""'
+    plotconst: 'True'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'True'
+    rate: '10'
+    showports: 'False'
+    showrf: 'False'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1320, 484.0]
+    rotation: 0
+    state: true
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1320, 388.0]
+    rotation: 0
+    state: enabled
+- name: root_raised_cosine_filter_0
+  id: root_raised_cosine_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: '0.51'
+    comment: ''
+    decim: '1'
+    gain: '.5'
+    interp: sps
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ntaps: rrc_ntaps
+    samp_rate: samp_rate
+    sym_rate: samp_rate/sps
+    type: interp_fir_filter_ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 548.0]
+    rotation: 0
+    state: true
+- name: rrc_ntaps
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: 'RRC # of Taps'
+    short_id: ''
+    type: ''
+    value: 2**7-1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 12.0]
+    rotation: 0
+    state: true
+- name: samp_rate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: TX Sample Rate
+    short_id: ''
+    type: intx
+    value: int(250e3)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 100.0]
+    rotation: 0
+    state: true
+- name: sps
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Samples Per Symbol
+    short_id: ''
+    type: intx
+    value: '10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [144, 100.0]
+    rotation: 0
+    state: true
+- name: virtual_sink_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: bytes
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [920, 300.0]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: bytes
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [80, 588.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [blocks_tagged_stream_multiply_length_0, '0', pad_sink_0, '0']
+- [blocks_tagged_stream_multiply_length_0, '0', qtgui_sink_x_0, '0']
+- [blocks_tagged_stream_multiply_length_0, '0', qtgui_time_sink_x_0, '0']
+- [epy_block_1, '0', root_raised_cosine_filter_0, '0']
+- [epy_block_2, Unpacked Packet, pdu_pdu_to_tagged_stream_0, pdus]
+- [pad_source_0, out, epy_block_2, MSG_In]
+- [pdu_pdu_to_tagged_stream_0, '0', virtual_sink_0, '0']
+- [root_raised_cosine_filter_0, '0', blocks_file_sink_1, '0']
+- [root_raised_cosine_filter_0, '0', blocks_tagged_stream_multiply_length_0, '0']
+- [virtual_source_0, '0', epy_block_1, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.7.0
